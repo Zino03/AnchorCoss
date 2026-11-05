@@ -28,7 +28,7 @@ export default function App() {
           <PriorityList stations={sim.stations} now={sim.now} selectedId={selectedId} onSelect={setSelectedId} />
         </aside>
         <main className="layout-main">
-          <MapView />
+          <MapView stations={sim.stations} selectedId={selectedId} onSelect={setSelectedId} />
           <DrainDetail station={selected} />
         </main>
       </div>

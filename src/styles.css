@@ -519,14 +519,96 @@ button {
 
 /* ---------- 10. 지도 (F4) ---------- */
 .map-card {
+  position: relative;
   padding: 0;
   overflow: hidden;
 }
-.map-placeholder {
-  height: 360px;
+.map {
+  height: 400px;
+  background: #e9edf2; /* 타일이 안 뜰 때 배경 */
+  font-family: var(--font);
+}
+
+/* divIcon 기본 흰 상자 제거 */
+.map-icon {
+  background: none;
+  border: none;
+}
+
+.map-marker {
+  position: relative;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--ease), background var(--ease);
 }
+.map-marker.st-normal { background: var(--st-normal); }
+.map-marker.st-warn { background: var(--st-warn); }
+.map-marker.st-danger { background: var(--st-danger); }
+.map-marker.st-check { background: var(--st-check); }
+
+.map-marker.is-selected {
+  transform: scale(1.3);
+  border: 3px solid var(--text);
+}
+
+/* 위험 마커: 퍼져 나가는 링 */
+.map-marker.is-alert::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--st-danger);
+  animation: ring 1.6s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes ring {
+  from { transform: scale(0.8); opacity: 0.9; }
+  to { transform: scale(1.7); opacity: 0; }
+}
+
+.map-legend {
+  position: absolute;
+  left: var(--sp-3);
+  bottom: var(--sp-3);
+  z-index: 500; /* 지도 타일·마커 위, 컨트롤(800) 아래 */
+  display: flex;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 6px var(--sp-3);
+  list-style: none;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+}
+.map-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+}
+.legend-dot.st-normal { background: var(--st-normal); }
+.legend-dot.st-warn { background: var(--st-warn); }
+.legend-dot.st-danger { background: var(--st-danger); }
+.legend-dot.st-check { background: var(--st-check); }
 
 /* ---------- 11. 상세 (F5) ---------- */
 .detail-head {
