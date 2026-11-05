@@ -32,7 +32,8 @@ npm run dev       # http://localhost:5173
 npm test          # 판정 로직 테스트
 npm run build     # 배포용 빌드 (dist/)
 npm run preview   # 빌드 결과 미리보기
-npm run scenario  # 시나리오별 판정 결과 출력 (구현 예정)
+npm run scenario  # 시나리오별 가상 데이터·정답 상태 출력
+                  # 예: npm run scenario -- gradual 1  (특정 시나리오, 1분 간격)
 ```
 
 ## 환경변수
@@ -64,7 +65,7 @@ src/
 
 - [x] 개발 환경 세팅 (빌드·테스트 동작 확인)
 - [x] 상태 정의·임계값 설정, 데이터 계약 (`states.js`, `config.js`, `types.js`)
-- [ ] 가상 데이터 생성기·시나리오
+- [x] 가상 데이터 생성기·시나리오 8종 (`src/sim/`)
 - [ ] 판정 로직 + 테스트
 - [ ] 대시보드 화면
 - [ ] 기상청 API 연동 (인증키 수령 후)
