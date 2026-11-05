@@ -7,6 +7,7 @@ import { Summary } from "./components/Summary.jsx";
 import { PriorityList } from "./components/PriorityList.jsx";
 import { MapView } from "./components/MapView.jsx";
 import { DrainDetail } from "./components/DrainDetail.jsx";
+import { Alerts } from "./components/Toasts.jsx";
 import { sortByPriority } from "./ui/format.js";
 
 export default function App() {
@@ -17,10 +18,11 @@ export default function App() {
 
   return (
     <div className="app">
-      <TopBar sim={sim} selected={selected} />
-
-      {/* F6: 위험 배너·토스트 영역 */}
-      <div className="alert-area" />
+      {/* 상단바 + 위험 배너는 스크롤해도 위에 고정 */}
+      <div className="sticky-head">
+        <TopBar sim={sim} selected={selected} />
+        <Alerts stations={sim.stations} events={sim.events} onSelect={setSelectedId} />
+      </div>
 
       <div className="layout">
         <aside className="layout-side">

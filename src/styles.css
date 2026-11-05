@@ -307,16 +307,14 @@ button {
   }
 }
 
-/* 배너·토스트 영역 (F6) */
-.alert-area:empty {
-  display: none;
-}
-
 /* ---------- 8. 상단바 · 시연 제어 ---------- */
-.topbar {
+.sticky-head {
   position: sticky;
   top: 0;
-  z-index: 1000; /* Leaflet 지도(400~)보다 위 */
+  z-index: 1000; /* Leaflet 지도(400~800)보다 위 */
+}
+
+.topbar {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -402,6 +400,129 @@ button {
   background: var(--surface);
   font: inherit;
   font-size: var(--fs-small);
+}
+
+/* ---------- 8-1. 위험 배너 ---------- */
+.banners {
+  display: grid;
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-5);
+  background: var(--st-danger-bg);
+  border-left: 6px solid var(--st-danger);
+  color: var(--text);
+  animation: slide-down 200ms ease-out;
+}
+.banner.is-rain {
+  background: linear-gradient(90deg, var(--st-danger-bg), var(--accent-soft));
+}
+.banner-icon {
+  color: var(--st-danger);
+  font-size: 20px;
+}
+.banner-text {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--sp-3);
+  min-width: 0;
+}
+.banner-text strong {
+  color: var(--st-danger);
+}
+.banner-reason {
+  font-size: var(--fs-small);
+  color: var(--text-sub);
+}
+.banner-close,
+.toast-close {
+  border: none;
+  background: none;
+  color: var(--text-mute);
+  font-size: 14px;
+  padding: var(--sp-1) var(--sp-2);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.banner-close:hover,
+.toast-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text);
+}
+.banner-more {
+  padding: 4px var(--sp-5);
+  background: var(--st-danger-bg);
+  color: var(--st-danger);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+/* ---------- 8-2. 토스트 ---------- */
+.toasts {
+  position: fixed;
+  right: var(--sp-5);
+  bottom: var(--sp-5);
+  z-index: 1100;
+  display: grid;
+  gap: var(--sp-2);
+  width: 340px;
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.12);
+  pointer-events: auto;
+  animation: slide-in 200ms ease-out;
+}
+.toast.st-normal { border-left-color: var(--st-normal); }
+.toast.st-warn { border-left-color: var(--st-warn); }
+.toast.st-check { border-left-color: var(--st-check); }
+.toast-icon {
+  font-weight: 700;
+}
+.toast.st-normal .toast-icon { color: var(--st-normal); }
+.toast.st-warn .toast-icon { color: var(--st-warn); }
+.toast.st-check .toast-icon { color: var(--st-check); }
+.toast-body {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.toast-body strong {
+  font-size: var(--fs-small);
+}
+.toast-reason {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+@keyframes slide-down {
+  from { transform: translateY(-8px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes slide-in {
+  from { transform: translateX(16px); opacity: 0; }
+  to { transform: none; opacity: 1; }
 }
 
 /* ---------- 9. 목록 공통 ---------- */
