@@ -21,7 +21,8 @@ export default function App() {
       {/* 상단바 + 위험 배너는 스크롤해도 위에 고정 */}
       <div className="sticky-head">
         <TopBar sim={sim} />
-        <Alerts stations={sim.stations} events={sim.events} onSelect={setSelectedId} />
+        {/* key=runId: "처음부터"를 누르면 알림 닫기 기록·토스트도 초기화 */}
+        <Alerts key={sim.runId} stations={sim.stations} events={sim.events} onSelect={setSelectedId} />
       </div>
 
       <div className="layout">

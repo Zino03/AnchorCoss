@@ -3,6 +3,7 @@
 // const sim = useSimulation();
 // sim.stations     Station[] (types.js) — 지점별 최신 샘플·이력·판정·전환 이력
 // sim.events       최근 상태 전환 이벤트 (최신순, 최대 50) — 배너/토스트용 { id, stationId, ts, from, to, reason }
+// sim.runId        reset()마다 1씩 증가. 화면 상태를 초기화하려면 컴포넌트 key로 쓴다
 // sim.now          시뮬레이션 현재 시각 (epoch ms)
 // sim.playing / setPlaying(bool)   재생·일시정지
 // sim.speed / setSpeed(n)          배속 (1틱 = 10초, 1× = 실제 1초마다 1틱)
@@ -38,6 +39,7 @@ export function useSimulation({ seed = 42, intervalMs = 1000, warmupSteps = 30 }
   const [events, setEvents] = useState([]);
   const [playing, setPlaying] = useState(true);
   const [speed, setSpeed] = useState(1);
+  const [runId, setRunId] = useState(0); // reset()마다 증가 — 화면 쪽 상태(알림 닫기 기록 등) 초기화용
 
   const advance = useCallback((n) => {
     const evs = [];
@@ -61,6 +63,7 @@ export function useSimulation({ seed = 42, intervalMs = 1000, warmupSteps = 30 }
   return {
     ...snap,
     events,
+    runId,
     playing,
     setPlaying,
     speed,
@@ -73,6 +76,7 @@ export function useSimulation({ seed = 42, intervalMs = 1000, warmupSteps = 30 }
       engineRef.current = makeEngine(seed, warmupSteps);
       setSnap(engineRef.current.snapshot());
       setEvents([]);
+      setRunId((n) => n + 1);
     }, [seed, warmupSteps]),
   };
 }
