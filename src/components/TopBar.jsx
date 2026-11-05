@@ -10,8 +10,8 @@ const fmtClock = (ts) =>
     hour12: false,
   });
 
-/** 상단바: 제목 · 시뮬레이션 시각 · 시연 제어 */
-export function TopBar({ sim, selected }) {
+/** 상단바: 제목 · 시뮬레이션 시각 · 시연 제어(전체 적용) */
+export function TopBar({ sim }) {
   return (
     <header className="topbar">
       <div className="topbar-title">
@@ -22,7 +22,7 @@ export function TopBar({ sim, selected }) {
           {!sim.playing && <span className="muted"> · 일시정지</span>}
         </span>
       </div>
-      <ScenarioControls sim={sim} selected={selected} />
+      <ScenarioControls sim={sim} />
     </header>
   );
 }

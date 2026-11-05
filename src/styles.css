@@ -384,13 +384,10 @@ button {
   font-size: var(--fs-small);
   color: var(--text-sub);
 }
-.control-label {
-  max-width: 140px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: var(--fs-small);
-  font-weight: 600;
+.control-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
 }
 .control-select {
   height: 32px;
@@ -754,8 +751,16 @@ button {
   font-weight: 700;
   margin-right: var(--sp-2);
 }
-.detail-scenario {
+.detail-actions {
   margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.detail-scenario {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
 }
 
 .detail-top {

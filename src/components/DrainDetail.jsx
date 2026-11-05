@@ -5,7 +5,7 @@ import { LoadCellGauge } from "./LoadCellGauge.jsx";
 import { WeightChart } from "./WeightChart.jsx";
 import { CommStatus } from "./CommStatus.jsx";
 import { Timeline } from "./Timeline.jsx";
-import { getScenario } from "../sim/scenario.js";
+import { SCENARIOS } from "../sim/scenario.js";
 
 /** 근거 문장의 숫자(1,234g, 80%, 7분 등)를 굵게 */
 function Emph({ text }) {
@@ -13,7 +13,7 @@ function Emph({ text }) {
   return parts.map((p, i) => (i % 2 ? <b key={i}>{p}</b> : p));
 }
 
-export function DrainDetail({ station, now }) {
+export function DrainDetail({ station, now, onCollect, onScenario }) {
   if (!station) {
     return (
       <section className="card">
@@ -29,7 +29,28 @@ export function DrainDetail({ station, now }) {
         <h2 className="detail-name">{station.name}</h2>
         <StateBadge state={j.state} pending={j.pending} pulse />
         <FlagTags flags={j.flags} />
-        <span className="muted detail-scenario">시나리오: {getScenario(station.scenarioId).name}</span>
+
+        {/* 이 지점만 조작 (전체 제어는 상단바) */}
+        <div className="detail-actions">
+          <label className="detail-scenario">
+            <span className="muted">시나리오</span>
+            <select
+              className="control-select"
+              value={station.scenarioId}
+              onChange={(e) => onScenario(station.id, e.target.value)}
+              aria-label={`${station.name} 시나리오`}
+            >
+              {SCENARIOS.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <button className="btn" onClick={() => onCollect(station.id)} title="쌓인 쓰레기를 치운 것으로 처리">
+            수거(리셋)
+          </button>
+        </div>
       </div>
 
       <div className="detail-top">

@@ -20,7 +20,7 @@ export default function App() {
     <div className="app">
       {/* 상단바 + 위험 배너는 스크롤해도 위에 고정 */}
       <div className="sticky-head">
-        <TopBar sim={sim} selected={selected} />
+        <TopBar sim={sim} />
         <Alerts stations={sim.stations} events={sim.events} onSelect={setSelectedId} />
       </div>
 
@@ -31,7 +31,12 @@ export default function App() {
         </aside>
         <main className="layout-main">
           <MapView stations={sim.stations} selectedId={selectedId} onSelect={setSelectedId} />
-          <DrainDetail station={selected} now={sim.now} />
+          <DrainDetail
+            station={selected}
+            now={sim.now}
+            onCollect={sim.collect}
+            onScenario={sim.setScenario}
+          />
         </main>
       </div>
     </div>
