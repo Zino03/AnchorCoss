@@ -1,52 +1,66 @@
-// 시나리오별 가상 데이터와 정답 상태를 표로 출력한다.
-// 사용: npm run scenario            (전체, 5분 간격)
-//       npm run scenario -- gradual (특정 시나리오)
-//       npm run scenario -- gradual 1  (1분 간격)
-// 3단계에서 판정 결과·정확도 비교 열을 추가한다.
+// 시나리오별 가상 데이터·정답·판정 결과와 성능 비교표를 출력한다 (기획서 4.7).
+// 사용: npm run scenario                 (전체 비교표만)
+//       npm run scenario -- gradual      (특정 시나리오 상세, 5분 간격)
+//       npm run scenario -- gradual 1    (1분 간격)
+//       npm run scenario -- all          (전체 상세 + 비교표)
 
-import { createSimulator } from "../src/sim/simulator.js";
-import { SCENARIOS, getScenario, truthAt } from "../src/sim/scenario.js";
-import { STATE_META } from "../src/logic/states.js";
+import { SCENARIOS, getScenario } from "../src/sim/scenario.js";
+import { runScenario } from "../src/logic/evaluate.js";
+import { STATE_META, FLAG_LABEL } from "../src/logic/states.js";
 
-const [onlyId, everyArg] = process.argv.slice(2);
+const [arg, everyArg] = process.argv.slice(2);
 const everyMin = Number(everyArg) || 5;
-const list = onlyId ? [getScenario(onlyId)] : SCENARIOS;
+const detail = arg ? (arg === "all" ? SCENARIOS : [getScenario(arg)]) : [];
+const label = (s) => STATE_META[s].label;
+const pad = (vals, widths) => vals.map((v, i) => String(v).padEnd(widths[i])).join(" ");
 
-const cols = [
-  ["t(분)", 6],
-  ["좌(g)", 7],
-  ["우(g)", 7],
-  ["합계", 7],
-  ["강우", 5],
-  ["RSSI", 5],
-  ["정답", 14],
-];
-const row = (vals) => vals.map((v, i) => String(v).padEnd(cols[i][1])).join(" ");
-const fmt = (v) => (v == null ? "null" : v);
-
-for (const sc of list) {
-  const sim = createSimulator({
-    stations: [{ id: "x", name: sc.name, lat: 0, lng: 0, real: false, scenarioId: sc.id }],
-    startTs: 0,
-    loop: false,
-  });
+// 상세 표
+const W = [6, 6, 6, 6, 5, 16, 16, 16, 20];
+for (const sc of detail) {
+  const { rows } = runScenario(sc.id);
   console.log(`\n■ ${sc.id} — ${sc.name}: ${sc.description}`);
-  console.log(row(cols.map((c) => c[0])));
-
-  const stepsPerRow = (everyMin * 60) / sim.stepSec;
-  const total = (sc.durationMin * 60) / sim.stepSec;
-  for (let i = 0; i < total; i++) {
-    const t = sim.elapsedMin("x");
-    const { sample: s } = sim.tick()[0];
-    if (i % stepsPerRow !== 0) continue;
-    const truth = STATE_META[truthAt(sc, t)].label;
-    if (!s) {
-      console.log(row([t.toFixed(1), "—", "—", "—", "—", "—", truth + " (수신 없음)"]));
-      continue;
-    }
-    const sum = s.leftG != null && s.rightG != null ? s.leftG + s.rightG : "—";
+  console.log(pad(["t(분)", "좌", "우", "합계", "강우", "정답", "판정", "단순", "플래그"], W));
+  rows.forEach((r, i) => {
+    const onRow = i % ((everyMin * 60) / 10) === 0;
+    if (!onRow && !r.transition) return; // 전환 시점은 항상 출력
+    const s = r.sample;
+    const v = (x) => (x == null ? "null" : x);
+    const sum = s && s.leftG != null && s.rightG != null ? s.leftG + s.rightG : "—";
+    const judged = label(r.judged) + (r.transition ? " ◀" : "");
     console.log(
-      row([t.toFixed(1), fmt(s.leftG), fmt(s.rightG), sum, s.rainMm, s.rssi, truth]),
+      pad(
+        [
+          r.t.toFixed(1),
+          s ? v(s.leftG) : "—",
+          s ? v(s.rightG) : "—",
+          sum,
+          s ? s.rainMm : "—",
+          label(r.truth),
+          judged,
+          label(r.baseline),
+          r.judgement.flags.map((f) => FLAG_LABEL[f]).join(","),
+        ],
+        W,
+      ),
     );
-  }
+  });
 }
+
+// 비교표 (seed 5개 평균)
+const seeds = [1, 2, 3, 4, 5];
+console.log("\n■ 판정 성능 비교 (seed 5개 평균) — 정확도 / 오경보(정답보다 많은 상태 전환)");
+const CW = [14, 12, 12, 12, 12];
+console.log(pad(["시나리오", "제안 정확도", "단순 정확도", "제안 오경보", "단순 오경보"], CW));
+const tot = { aj: 0, ab: 0, fj: 0, fb: 0 };
+for (const sc of SCENARIOS) {
+  const ss = seeds.map((seed) => runScenario(sc.id, { seed }).summary);
+  const avg = (k) => ss.reduce((a, s) => a + s[k], 0) / ss.length;
+  const aj = avg("accJudge"), ab = avg("accBaseline"), fj = avg("falseJudge"), fb = avg("falseBaseline");
+  Object.assign(tot, { aj: tot.aj + aj, ab: tot.ab + ab, fj: tot.fj + fj, fb: tot.fb + fb });
+  console.log(pad([sc.id, `${(aj * 100).toFixed(1)}%`, `${(ab * 100).toFixed(1)}%`, fj.toFixed(1), fb.toFixed(1)], CW));
+}
+const n = SCENARIOS.length;
+console.log(
+  pad(["평균/합계", `${((tot.aj / n) * 100).toFixed(1)}%`, `${((tot.ab / n) * 100).toFixed(1)}%`, tot.fj.toFixed(1), tot.fb.toFixed(1)], CW),
+);
+console.log("※ 제안 방식 정확도가 조금 낮은 것은 디바운싱(상태 확정 30초 대기)에 따른 의도된 지연입니다.");

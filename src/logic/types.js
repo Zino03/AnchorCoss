@@ -14,10 +14,12 @@
  */
 
 /**
- * 판정 결과. judge()가 반환한다.
+ * 판정 결과. createJudge().update()가 { judgement, transition }으로 반환한다.
+ * transition은 확정 상태가 바뀐 순간에만 { ts, from, to, reason }, 나머지는 null (알림은 이때만).
  * @typedef {Object} Judgement
  * @property {"normal"|"warn"|"danger"|"check"} state  확정 상태 (STATES)
- * @property {number} score      막힘 점수 0~100 (check 이면 null)
+ * @property {"normal"|"warn"|"danger"|"check"|null} pending  디바운싱 중인 후보 상태 (화면에 "확인 중" 표시용)
+ * @property {number|null} score 막힘 점수 0~100 (check 이면 null)
  * @property {string[]} reason   판정 근거 문장 (화면 표시용, 1~3줄)
  * @property {string[]} flags    보조 플래그 (FLAGS: raining/fast/imbalance)
  * @property {"stale"|"sensor"|null} checkCause  점검 필요 원인 (CHECK_CAUSE)
