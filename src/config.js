@@ -1,18 +1,16 @@
 // 지점·임계값 설정. 판정 로직은 이 값만 참조한다 (하드코딩 금지).
 // 기획서 4.8 — 임의의 초기값. 실물 로드셀 보정 후 합동 테스트에서 교체한다.
 
-// 기상청 대상 지역 — 팀원에게 받는 중이라 비워둔다 (기획서 7장).
-// nx, ny: 기상청 단기예보 격자 좌표
+// 기상청 대상 지역 (기획서 7장). 기상청 격자는 5km 단위라 동네 수준이면 충분하다.
+// 격자 좌표(nx, ny)는 lib/kma.js의 latLngToGrid()가 위경도로 계산한다 (충북대 부근 → 68, 106).
 export const REGION = {
-  name: "",
-  lat: null,
-  lng: null,
-  nx: null,
-  ny: null,
+  name: "청주 충북대 부근",
+  lat: 36.6286,
+  lng: 127.4561,
 };
 
-// 지도 초기 중심 (REGION 확정 전 임시값: 춘천시청 부근)
-export const MAP_CENTER = { lat: 37.8813, lng: 127.7298, zoom: 14 };
+// 지도 초기 중심. 가상 지점 좌표는 이 주변에 배치된다 (src/sim/simulator.js)
+export const MAP_CENTER = { lat: REGION.lat, lng: REGION.lng, zoom: 15 };
 
 export const TH = Object.freeze({
   WARN_TOTAL_G: 600, // 주의 기준 (총 중량, g)

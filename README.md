@@ -39,7 +39,7 @@ npm run scenario  # 판정 성능 비교표 (제안 방식 vs 단순 임계값)
 
 ## 환경변수
 
-`.env.example`을 `.env.local`로 복사해 값을 채웁니다 (`.env.local`은 git에 올라가지 않습니다).
+`.env.example`을 `.env.local`로 **복사**해 값을 채웁니다 (`.env.local`은 git에 올라가지 않습니다. `.env.example`은 지우지 마세요).
 
 | 이름 | 설명 |
 |---|---|
@@ -47,11 +47,22 @@ npm run scenario  # 판정 성능 비교표 (제안 방식 vs 단순 임계값)
 
 키가 없어도 시뮬레이터의 수동 강우 입력으로 개발·시연할 수 있습니다.
 
+## 강우 모드 (상단바)
+
+| 모드 | 강우 값 | 비고 |
+|---|---|---|
+| 시뮬레이션 | 시나리오 강우, 또는 "강우 수동" 슬라이더 | 기본값. 우천 시연은 이 모드에서 |
+| 실시간 | 기상청 초단기실황 1시간 강수량(RN1)을 모든 지점에 적용 | 10분마다 갱신. 센서 값은 실물 연결 전까지 가상 |
+
+- 대상 지역: `src/config.js`의 `REGION` (청주 충북대 부근, 기상청 격자 68·106은 위경도로 자동 계산)
+- 서버 API: `GET /api/weather[?lat=&lng=]` → `{ ok, region, nx, ny, baseDate, baseTime, rainMm, pty, ptyLabel, tempC, humidity, windMs }`
+- `/api/weather`는 `npm run dev`(Vite 미들웨어)와 Vercel 배포에서만 동작합니다. `npm run preview`에서는 실시간 모드가 "연결 실패"로 표시됩니다.
+
 ## 폴더 구조
 
 ```
-api/            서버리스 함수 (기상청 프록시 /api/weather)
-lib/            기상청 API 호출·파싱
+api/            서버리스 함수 (기상청 프록시 /api/weather, 10분 캐시)
+lib/            기상청 API 호출·파싱·위경도→격자 변환 (kma.js)
 scripts/        시나리오 출력 등 보조 스크립트
 public/         정적 파일
 src/
@@ -72,7 +83,8 @@ src/
 - [x] 시뮬레이션 훅 `useSimulation` (`src/sim/engine.js`, `useSimulation.js`)
 - [x] 대시보드 화면 (`docs/DESIGN.md` 기준): 상단바·시연 제어, 상태 요약, 수거 우선순위, 지도, 상세(로드셀 게이지·중량 그래프·통신 상태·타임라인), 위험 배너·토스트
 - [x] 접근성 점검: 상태 글자색 대비 4.5:1 이상, 키보드 조작, 동작 줄이기 대응
-- [ ] 기상청 API 연동 (인증키 수령 후)
+- [x] 기상청 API 연동: 초단기실황 프록시 + 강우 모드(시뮬레이션/실시간) (`lib/kma.js`, `api/weather.js`, `src/sim/useWeather.js`)
+- [ ] 센서 수신 서버·DB (합동 테스트 전, 하드웨어 사양 확인 후)
 
 ## 배포
 
