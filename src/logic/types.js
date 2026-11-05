@@ -24,10 +24,13 @@
  * @property {string[]} flags    보조 플래그 (FLAGS: raining/fast/imbalance)
  * @property {"stale"|"sensor"|null} checkCause  점검 필요 원인 (CHECK_CAUSE)
  * @property {Object} metrics    파생 값 (기획서 4.2)
+ * @property {number|null} metrics.leftG    평활(최근 SMOOTH_SEC초 중앙값) 좌 중량
+ * @property {number|null} metrics.rightG   평활 우 중량
  * @property {number|null} metrics.totalG
  * @property {number|null} metrics.maxSideG
  * @property {number|null} metrics.imbalance
  * @property {number|null} metrics.rateGPerMin
+ * @property {0|1|2|3|null} metrics.stage  하드웨어 수거 단계 (250 / 500 / 1000g)
  */
 
 /**

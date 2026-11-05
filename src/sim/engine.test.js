@@ -96,7 +96,8 @@ describe("engine", () => {
     it("가상 샘플은 무시하고 서버 샘플로 판정, 다른 지점은 계속 가상", () => {
       const { e, wall } = makeLive();
       e.setRealStations(["st-1"]);
-      e.ingestReal("st-1", [real(wall() - 20_000, 400), real(wall() - 10_000, 410)]);
+      // 점검 필요(수신 기록 없음)에서 주의로 가므로 30초 디바운싱 → 40초치 샘플
+      e.ingestReal("st-1", [0, 1, 2, 3, 4].map((i) => real(wall() - 40_000 + i * 10_000, i === 4 ? 410 : 400)));
       run(e, 30);
       const s = st1(e);
       expect(s.latest.leftG).toBe(410); // 시뮬레이터 값으로 덮이지 않음

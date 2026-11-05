@@ -86,6 +86,36 @@ export function toChartData(history, { gapMs = 30_000, maxG = 5000 } = {}) {
   return out;
 }
 
+/**
+ * 그래프용 간격 축소: 점이 maxPoints보다 많으면 시간 구간별 평균으로 줄인다.
+ * - 값이 전부 null인 구간은 null로 남겨 끊김(통신 두절)을 유지
+ * - 강우는 구간 최대값 (짧은 비도 우천 구간으로 보이게)
+ */
+export function downsample(data, maxPoints) {
+  if (data.length <= maxPoints) return data;
+  const from = data[0].ts;
+  const width = (data[data.length - 1].ts - from) / maxPoints || 1;
+  const buckets = new Map();
+  for (const d of data) {
+    const k = Math.min(maxPoints - 1, Math.floor((d.ts - from) / width));
+    if (!buckets.has(k)) buckets.set(k, []);
+    buckets.get(k).push(d);
+  }
+  const mean = (arr, key) => {
+    const v = arr.map((x) => x[key]).filter((x) => x != null);
+    return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null;
+  };
+  return [...buckets.entries()]
+    .sort((a, b) => a[0] - b[0])
+    .map(([, arr]) => ({
+      ts: arr[Math.floor(arr.length / 2)].ts,
+      left: mean(arr, "left"),
+      right: mean(arr, "right"),
+      total: mean(arr, "total"),
+      rain: Math.max(...arr.map((x) => x.rain ?? 0)),
+    }));
+}
+
 /** 강우 구간 [{ from, to }] (rain ≥ minMm 이 이어지는 구간) */
 export function rainSegments(data, minMm) {
   const segs = [];

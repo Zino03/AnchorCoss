@@ -14,7 +14,8 @@ import { TH } from "../config.js";
  * @param {Object} [opt]
  * @param {ReturnType<typeof createSimulator>} [opt.sim]
  * @param {typeof TH} [opt.th]
- * @param {number} [opt.historyLimit]    지점별 보관 샘플 수 (기본 360 = 10초 간격 1시간)
+ * @param {number} [opt.historyLimit]    가상 지점 보관 샘플 수 (기본 360 = 10초 간격 1시간)
+ * @param {number} [opt.realHistoryLimit] 실물 지점 보관 샘플 수 (기본 3600 = 1초 간격 1시간)
  * @param {number} [opt.transitionLimit] 지점별 보관 상태 전환 수
  * @param {() => number} [opt.wallClock] 실제 시계 (테스트에서 교체)
  */
@@ -22,6 +23,7 @@ export function createEngine({
   sim = createSimulator(),
   th = TH,
   historyLimit = 360,
+  realHistoryLimit = 3600,
   transitionLimit = 20,
   wallClock = () => Date.now(),
 } = {}) {
@@ -43,7 +45,8 @@ export function createEngine({
     if (sample) {
       p.latest = sample;
       p.history.push(sample);
-      if (p.history.length > historyLimit) p.history.shift();
+      const limit = realIds.has(stationId) ? realHistoryLimit : historyLimit;
+      if (p.history.length > limit) p.history.splice(0, p.history.length - limit);
     }
     p.judgement = judgement;
     if (!transition) return null;

@@ -32,7 +32,7 @@ export const DEFAULT_STATIONS = [
   { id: "st-8", name: "빗물받이 #8", real: false, scenarioId: "spike", ...at(0.008, -0.002) },
 ];
 
-const WEIGHT_NOISE_G = 8;
+const WEIGHT_NOISE_G = 40; // 하드웨어 오차 ±100g 가정 → 표준편차 40g (±100g ≈ 2.5σ)
 const RSSI_NOISE = 2;
 const BATTERY_DRAIN_PER_STEP = 0.002;
 

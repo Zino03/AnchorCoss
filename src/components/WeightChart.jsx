@@ -1,4 +1,5 @@
-// 중량 그래프 (DESIGN.md 5장): 좌/우/합계 선, 합계 기준 주의·위험 점선, 우천 구간 배경, 상태 전환 세로선
+// 중량 그래프 (DESIGN.md 5장): 좌/우/합계 선, 합계 기준 1·2·3단계(주의·중간·위험) 점선, 우천 구간 배경, 상태 전환 세로선
+// 실물 센서는 1초 간격이라 1시간이 3600점 → 그래프에는 최대 MAX_POINTS개로 줄여 그린다 (구간 평균)
 
 import {
   ResponsiveContainer,
@@ -13,12 +14,13 @@ import {
 } from "recharts";
 import { TH } from "../config.js";
 import { COLORS } from "../ui/colors.js";
-import { toChartData, rainSegments, fmtHM, fmtTime, fmtG } from "../ui/format.js";
+import { toChartData, downsample, rainSegments, fmtHM, fmtTime, fmtG } from "../ui/format.js";
 
 const NAMES = { left: "좌", right: "우", total: "합계" };
+const MAX_POINTS = 400;
 
 export function WeightChart({ history, transitions }) {
-  const data = toChartData(history, { maxG: TH.MAX_VALID_G });
+  const data = downsample(toChartData(history, { maxG: TH.MAX_VALID_G }), MAX_POINTS);
   if (data.length < 2) return <p className="muted chart-empty">데이터 수집 중…</p>;
 
   const from = data[0].ts;
@@ -47,8 +49,9 @@ export function WeightChart({ history, transitions }) {
             minTickGap={40}
           />
           <YAxis domain={[0, yMax]} stroke={COLORS.axis} fontSize={12} width={52} tickFormatter={(v) => `${v}g`} />
-          <ReferenceLine y={TH.WARN_TOTAL_G} stroke={COLORS.warn} strokeDasharray="5 4" label={{ value: "주의", position: "insideTopLeft", fill: COLORS.warn, fontSize: 11 }} />
-          <ReferenceLine y={TH.DANGER_TOTAL_G} stroke={COLORS.danger} strokeDasharray="5 4" label={{ value: "위험(수거)", position: "insideTopLeft", fill: COLORS.danger, fontSize: 11 }} />
+          <ReferenceLine y={TH.WARN_TOTAL_G} stroke={COLORS.warn} strokeDasharray="5 4" label={{ value: "1단계·주의", position: "insideTopLeft", fill: COLORS.warnText, fontSize: 11 }} />
+          <ReferenceLine y={TH.MID_TOTAL_G} stroke={COLORS.axis} strokeDasharray="2 4" label={{ value: "2단계", position: "insideTopLeft", fill: COLORS.axis, fontSize: 11 }} />
+          <ReferenceLine y={TH.DANGER_TOTAL_G} stroke={COLORS.danger} strokeDasharray="5 4" label={{ value: "3단계·위험(수거)", position: "insideTopLeft", fill: COLORS.dangerText, fontSize: 11 }} />
           {marks.map((m) => (
             <ReferenceLine key={m.id} x={m.ts} stroke={COLORS[m.to]} strokeOpacity={0.6} />
           ))}

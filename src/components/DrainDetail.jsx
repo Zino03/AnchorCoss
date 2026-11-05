@@ -68,7 +68,7 @@ export function DrainDetail({ station, now, onCollect, onScenario }) {
       <div className="detail-top">
         <div className="detail-block">
           <h3 className="block-title">로드셀</h3>
-          <LoadCellGauge sample={station.latest} flags={j.flags} />
+          <LoadCellGauge sample={station.latest} metrics={j.metrics} state={j.state} flags={j.flags} />
         </div>
 
         <div className="detail-block detail-info">

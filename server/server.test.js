@@ -85,6 +85,17 @@ describe("db", () => {
     expect(db.history("st-1", { afterId: next.lastId })).toEqual({ samples: [], lastId: next.lastId });
   });
 
+  it("초기 로드가 limit을 넘으면 최신 건을 주고, 이후 폴링에 빈 구간이 생기지 않는다 (1초 간격 대비)", () => {
+    db.insertMany(Array.from({ length: 300 }, (_, i) => s(1000 + i * 1000, i)));
+    const first = db.history("st-1", { since: 0, limit: 100 });
+    expect(first.samples).toHaveLength(100);
+    expect(first.samples[0].leftG).toBe(200); // 오래된 쪽을 버림
+    expect(first.samples.at(-1).leftG).toBe(299); // 최신까지 포함
+    expect(first.samples.map((x) => x.ts)).toEqual([...first.samples.map((x) => x.ts)].sort((a, b) => a - b));
+    db.insertMany([s(1_000_000, 777)]);
+    expect(db.history("st-1", { afterId: first.lastId }).samples.map((x) => x.leftG)).toEqual([777]);
+  });
+
   it("트랜잭션: 하나라도 실패하면 전부 롤백", () => {
     const many = Array.from({ length: 60 }, () => s(1000, Math.random()));
     expect(() => db.insertMany([s(5000), ...many])).toThrow();

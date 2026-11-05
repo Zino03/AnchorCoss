@@ -11,4 +11,6 @@ export const COLORS = {
   warn: "#d97706",
   danger: "#dc2626",
   check: "#6b7280",
+  warnText: "#b45309", // --st-warn-text (글자용, 대비 4.5:1)
+  dangerText: "#b91c1c", // --st-danger-text
 };

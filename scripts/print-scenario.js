@@ -63,4 +63,4 @@ const n = SCENARIOS.length;
 console.log(
   pad(["평균/합계", `${((tot.aj / n) * 100).toFixed(1)}%`, `${((tot.ab / n) * 100).toFixed(1)}%`, tot.fj.toFixed(1), tot.fb.toFixed(1)], CW),
 );
-console.log("※ 제안 방식 정확도가 조금 낮은 것은 디바운싱(상태 확정 30초 대기)에 따른 의도된 지연입니다.");
+console.log("※ 제안 방식은 30초 이동 중앙값 + 30초 디바운싱만큼 상태 전환을 늦게 잡습니다 (오경보를 없애는 대가로 생기는 의도된 지연).");

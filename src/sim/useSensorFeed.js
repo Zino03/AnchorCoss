@@ -11,6 +11,7 @@ import { useEffect, useRef, useState } from "react";
 
 const POLL_MS = 3000;
 const HISTORY_MS = 60 * 60 * 1000;
+const LIMIT = 4000; // 1초 간격이면 1시간 = 3600건 (서버 최대 5000)
 
 export function useSensorFeed({ enabled, stationId, onSamples, intervalMs = POLL_MS, resetKey = 0 }) {
   const [state, setState] = useState({ status: "off", error: null, lastAt: null });
@@ -29,7 +30,7 @@ export function useSensorFeed({ enabled, stationId, onSamples, intervalMs = POLL
 
     async function poll() {
       const initial = cursor == null;
-      const q = initial ? `since=${Date.now() - HISTORY_MS}` : `afterId=${cursor}`;
+      const q = initial ? `since=${Date.now() - HISTORY_MS}&limit=${LIMIT}` : `afterId=${cursor}&limit=${LIMIT}`;
       try {
         const r = await fetch(`/api/stations?id=${encodeURIComponent(stationId)}&${q}`);
         let j;

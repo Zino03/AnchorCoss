@@ -5,8 +5,10 @@
 //  2. 이상치 필터: 직전 채택값 대비 MAX_JUMP_G 넘게 변하면 1회 무시, 2회 연속이면 인정
 //  3. 통신 두절: 마지막 수신 후 STALE_SEC 경과 → 점검 필요(stale), 즉시 확정
 //  4. 중량 단계 판정 + 히스테리시스 (내려갈 때는 기준값 × RECOVER_RATIO 미만이어야 함)
+//     판정에 쓰는 좌/우 값은 최근 SMOOTH_SEC초 채택값의 채널별 중앙값 (노이즈·순간 충격 완화, 시간 기준이라 샘플 간격과 무관)
 //  5. 디바운싱: 새 상태가 DEBOUNCE_SEC 이상 지속돼야 확정
-//     예외 — 첫 판정, 점검 필요에서 복귀, 통신 두절 진입은 즉시
+//     예외(즉시) — 첫 판정, 통신 두절 진입, 점검 필요에서 "점검 전과 같은 단계"로 복귀
+//     (점검 전과 다른 단계로 복귀하면 디바운싱: 복구 직후 샘플 1~2개의 노이즈로 오경보가 나지 않게)
 //  6. 플래그(우천/급증/편중), 막힘 점수, 판정 근거 문장 생성
 //  7. 확정 상태가 바뀌면 transition 이벤트 반환 (알림은 이때만)
 
@@ -40,12 +42,12 @@ function median(arr) {
   return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2;
 }
 
-/** 최소제곱 기울기 (g/분). 구간이 2분 미만이면 null */
-function slopePerMin(points) {
+/** 최소제곱 기울기 (g/분). 데이터 구간이 minSpanMin분 미만이면 null (짧은 구간은 노이즈에 크게 흔들림) */
+function slopePerMin(points, minSpanMin) {
   if (points.length < 3) return null;
   const t0 = points[0].ts;
   const span = (points[points.length - 1].ts - t0) / 60000;
-  if (span < 2) return null;
+  if (span < minSpanMin) return null;
   let sx = 0, sy = 0, sxx = 0, sxy = 0;
   for (const p of points) {
     const x = (p.ts - t0) / 60000;
@@ -54,6 +56,14 @@ function slopePerMin(points) {
   const n = points.length;
   const den = n * sxx - sx * sx;
   return den === 0 ? null : (n * sxy - sx * sy) / den;
+}
+
+/** 하드웨어 수거 단계: 0(1단계 미만) / 1(≥주의) / 2(≥중간) / 3(≥위험) — 표시용 */
+export function stageOf(totalG, th = DEFAULT_TH) {
+  if (totalG >= th.DANGER_TOTAL_G) return 3;
+  if (totalG >= th.MID_TOTAL_G) return 2;
+  if (totalG >= th.WARN_TOTAL_G) return 1;
+  return 0;
 }
 
 /** 히스테리시스를 적용한 중량 단계. levelRank: 직전 확정 단계 (0 정상, 1 주의, 2 위험) */
@@ -85,7 +95,7 @@ export function createJudge(th = DEFAULT_TH) {
   let accepted = null; // 필터를 통과한 최신 값 { leftG, rightG, ts }
   let jumpPending = false;
   let history = []; // 증가 속도 계산용 { ts, total }
-  let recent = []; // 편중 판단용 최근 채택값 3개 (중앙값으로 순간 충격 무시)
+  let recent = []; // 판정용 최근 SMOOTH_SEC초 채택값 { ts, leftG, rightG } (채널별 중앙값)
 
   function accept(sample) {
     const total = sample.leftG + sample.rightG;
@@ -99,24 +109,28 @@ export function createJudge(th = DEFAULT_TH) {
     jumpPending = false;
     accepted = { leftG: sample.leftG, rightG: sample.rightG, ts: sample.ts };
     history.push({ ts: sample.ts, total });
-    recent.push({ leftG: sample.leftG, rightG: sample.rightG });
-    if (recent.length > 3) recent.shift();
+    recent.push({ ts: sample.ts, leftG: sample.leftG, rightG: sample.rightG });
+    const smoothFrom = sample.ts - th.SMOOTH_SEC * 1000;
+    while (recent.length > 1 && recent[0].ts < smoothFrom) recent.shift();
     const from = sample.ts - th.RATE_WINDOW_MIN * 60000;
     while (history.length && history[0].ts < from) history.shift();
   }
 
   function metrics() {
-    if (!accepted) return { totalG: null, maxSideG: null, imbalance: null, rateGPerMin: null };
-    const { leftG, rightG } = accepted;
+    if (!accepted) {
+      return { leftG: null, rightG: null, totalG: null, maxSideG: null, imbalance: null, rateGPerMin: null, stage: null };
+    }
+    const leftG = median(recent.map((r) => r.leftG));
+    const rightG = median(recent.map((r) => r.rightG));
     const totalG = leftG + rightG;
-    const mL = median(recent.map((r) => r.leftG));
-    const mR = median(recent.map((r) => r.rightG));
-    const mTotal = mL + mR;
     return {
+      leftG,
+      rightG,
       totalG,
       maxSideG: Math.max(leftG, rightG),
-      imbalance: mTotal >= th.IMBALANCE_MIN_G ? Math.abs(mL - mR) / mTotal : null,
-      rateGPerMin: slopePerMin(history),
+      imbalance: totalG >= th.IMBALANCE_MIN_G ? Math.abs(leftG - rightG) / totalG : null,
+      rateGPerMin: slopePerMin(history, th.RATE_MIN_SPAN_MIN),
+      stage: stageOf(totalG, th),
     };
   }
 
@@ -156,7 +170,7 @@ export function createJudge(th = DEFAULT_TH) {
     } else {
       const immediate =
         confirmed == null ||
-        (confirmed === STATES.CHECK && raw !== STATES.CHECK) ||
+        (confirmed === STATES.CHECK && raw === lastLevel) ||
         rawCause === CHECK_CAUSE.STALE;
       if (candidate !== raw) {
         candidate = raw;
@@ -228,7 +242,7 @@ export function createJudge(th = DEFAULT_TH) {
 
   function weightReason(m, flags, rainMm) {
     const lines = [];
-    const { leftG, rightG } = accepted;
+    const { leftG, rightG } = m; // 평활값
     const leftHeavier = leftG >= rightG;
 
     if (m.maxSideG >= th.DANGER_SIDE_G) {
@@ -237,7 +251,8 @@ export function createJudge(th = DEFAULT_TH) {
       lines.push(`총 중량 ${fmtG(m.totalG)} — 수거 기준(${fmtG(th.DANGER_TOTAL_G)}) 초과`);
     } else {
       const pct = Math.round((m.totalG / th.DANGER_TOTAL_G) * 100);
-      lines.push(`총 중량 ${fmtG(m.totalG)} — 수거 기준(${fmtG(th.DANGER_TOTAL_G)})의 ${pct}%`);
+      const stage = m.stage > 0 ? ` (${m.stage}단계)` : "";
+      lines.push(`총 중량 ${fmtG(m.totalG)}${stage} — 수거 기준(${fmtG(th.DANGER_TOTAL_G)})의 ${pct}%`);
     }
 
     const env = [];

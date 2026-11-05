@@ -946,6 +946,21 @@ button {
 .gauge-line.is-danger { border-color: var(--st-danger); color: var(--st-danger-text); }
 .gauge-line.is-warn { border-color: var(--st-warn); color: var(--st-warn-text); }
 
+.gauge-over {
+  position: absolute;
+  top: 2px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+}
+.gauge-note {
+  font-size: 11px;
+  text-align: center;
+}
+
 .gauge-values {
   display: flex;
   justify-content: space-between;

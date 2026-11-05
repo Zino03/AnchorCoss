@@ -77,7 +77,11 @@ export function openDb(file = process.env.DB_PATH || DEFAULT_PATH) {
     ),
     stations: d.prepare("SELECT * FROM stations ORDER BY id"),
     latest: d.prepare("SELECT * FROM samples WHERE station_id = ? ORDER BY ts DESC LIMIT 1"),
-    since: d.prepare("SELECT * FROM samples WHERE station_id = ? AND ts >= ? ORDER BY ts LIMIT ?"),
+    // since 이후 "최신" limit건 (건수가 넘치면 오래된 쪽을 버린다) — 오름차순으로 돌려줌
+    since: d.prepare(
+      `SELECT * FROM (SELECT * FROM samples WHERE station_id = ? AND ts >= ? ORDER BY ts DESC LIMIT ?)
+       ORDER BY ts`,
+    ),
     afterId: d.prepare("SELECT * FROM samples WHERE station_id = ? AND id > ? ORDER BY id LIMIT ?"),
     maxId: d.prepare("SELECT COALESCE(MAX(id), 0) AS m FROM samples WHERE station_id = ?"),
   };
@@ -132,6 +136,7 @@ export function openDb(file = process.env.DB_PATH || DEFAULT_PATH) {
 
     /**
      * 지점 이력. afterId가 있으면 그 이후 저장분(폴링용), 없으면 since 이후 측정분(초기 로드용).
+     * 초기 로드가 limit을 넘으면 오래된 쪽을 버리고 최신 limit건을 준다 (1초 간격이면 1시간이 3600건).
      * lastId: 다음 폴링에 쓸 커서
      */
     history(stationId, { since = 0, afterId = null, limit = 2000 } = {}) {

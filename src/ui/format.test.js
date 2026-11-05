@@ -1,5 +1,33 @@
 import { describe, it, expect } from "vitest";
-import { countByState, sortByPriority, fmtAgo, fmtG, rssiLevel, toChartData, rainSegments } from "./format.js";
+import { countByState, sortByPriority, fmtAgo, fmtG, rssiLevel, toChartData, downsample, rainSegments } from "./format.js";
+
+describe("downsample", () => {
+  const pt = (ts, total, rain = 0) => ({ ts, left: total == null ? null : total / 2, right: total == null ? null : total / 2, total, rain });
+
+  it("점이 적으면 그대로", () => {
+    const d = [pt(0, 1), pt(1, 2)];
+    expect(downsample(d, 10)).toBe(d);
+  });
+
+  it("1초 간격 3600점 → 최대 400점, 구간 평균", () => {
+    const d = Array.from({ length: 3600 }, (_, i) => pt(i * 1000, i));
+    const r = downsample(d, 400);
+    expect(r.length).toBeLessThanOrEqual(400);
+    expect(r.length).toBeGreaterThan(390);
+    expect(r[0].total).toBeCloseTo(4, 0); // 0~8 평균 근처
+    expect(r.map((x) => x.ts)).toEqual([...r.map((x) => x.ts)].sort((a, b) => a - b));
+  });
+
+  it("통신 두절 구간(null)은 끊김으로 유지, 강우는 최대값", () => {
+    const d = [
+      ...Array.from({ length: 50 }, (_, i) => pt(i, 100, i === 10 ? 5 : 0)),
+      ...Array.from({ length: 50 }, (_, i) => pt(50 + i, null)),
+    ];
+    const r = downsample(d, 10);
+    expect(r.at(-1).total).toBeNull();
+    expect(Math.max(...r.map((x) => x.rain))).toBe(5);
+  });
+});
 
 describe("rssiLevel", () => {
   it("4단계", () => {

@@ -2,6 +2,7 @@
 // at(tMin): 노이즈 없는 기준값을 돌려준다. 노이즈는 simulator.js가 더한다.
 // truth(tMin): 그 시각의 정답 상태 (ground truth). 판정 정확도 측정에 쓴다 (기획서 4.7).
 // expectStates / expectFlags: 판정 로직이 보여야 하는 상태 흐름·플래그 (3단계 테스트용).
+// 무게 범위는 하드웨어 기준(로드셀 정격 1kg ×2, 주의 250 / 위험 총 1000·한쪽 700g)에 맞춘다.
 
 import { TH } from "../config.js";
 import { STATES, FLAGS } from "../logic/states.js";
@@ -43,29 +44,29 @@ export const SCENARIOS = [
   {
     id: "gradual",
     name: "서서히 누적",
-    description: "좌우 균등하게 선형 증가 → 주의 → 위험(총량)",
+    description: "좌우 균등하게 선형 증가 → 주의(≈14분) → 위험(총량, ≈68분)",
     durationMin: 100,
-    at: (t) => ({ ...split(lerp(100, 2000, t / 90)), rainMm: 0 }),
+    at: (t) => ({ ...split(lerp(50, 1300, t / 90)), rainMm: 0 }),
     expectStates: [STATES.NORMAL, STATES.WARN, STATES.DANGER],
     expectFlags: [],
   },
   {
     id: "imbalance",
     name: "한쪽 쏠림",
-    description: "좌측만 빠르게 증가 → 위험(편측) + 편중",
+    description: "좌측만 빠르게 증가 → 주의(≈12분) → 위험(편측 700g, ≈46분) + 편중",
     durationMin: 70,
-    at: (t) => ({ leftG: lerp(50, 1300, t / 60), rightG: 60, rainMm: 0 }),
+    at: (t) => ({ leftG: lerp(30, 900, t / 60), rightG: 40, rainMm: 0 }),
     expectStates: [STATES.NORMAL, STATES.WARN, STATES.DANGER],
     expectFlags: [FLAGS.IMBALANCE],
   },
   {
     id: "rainSurge",
     name: "우천 급증",
-    description: "10~40분 강우(15mm/h) 동안 분당 80g씩 증가",
+    description: "10~40분 강우(15mm/h) 동안 분당 50g씩 증가",
     durationMin: 55,
     at: (t) => {
       const raining = t >= 10 && t < 40;
-      const total = t < 10 ? 200 : 200 + 80 * (Math.min(t, 40) - 10);
+      const total = t < 10 ? 100 : 100 + 50 * (Math.min(t, 40) - 10);
       return { ...split(total, 0.55), rainMm: raining ? 15 : 0 };
     },
     expectStates: [STATES.NORMAL, STATES.WARN, STATES.DANGER],
@@ -77,7 +78,7 @@ export const SCENARIOS = [
     description: "위험 상태에서 20분에 수거 → 정상 복귀",
     durationMin: 40,
     at: (t) => {
-      const total = t < 20 ? lerp(1600, 1800, t / 20) : 60 + (t - 20) * 2;
+      const total = t < 20 ? lerp(1200, 1300, t / 20) : 40 + (t - 20) * 2;
       return { ...split(total), rainMm: 0 };
     },
     expectStates: [STATES.DANGER, STATES.NORMAL],
@@ -92,7 +93,7 @@ export const SCENARIOS = [
       let rssi = -55;
       if (t >= 12 && t < 20) rssi = lerp(-55, -92, (t - 12) / 8);
       else if (t >= 35) rssi = -60;
-      return { leftG: 170, rightG: 150, rainMm: 0, rssi, dropped: t >= 20 && t < 35 };
+      return { leftG: 70, rightG: 60, rainMm: 0, rssi, dropped: t >= 20 && t < 35 };
     },
     // 마지막 수신(20분) 후 STALE_SEC(5분)이 지나야 점검 필요
     truth: (t) =>
@@ -106,10 +107,10 @@ export const SCENARIOS = [
     description: "15~30분 우측 음수값, 35~40분 우측 채널 누락",
     durationMin: 50,
     at: (t) => {
-      let rightG = 180;
+      let rightG = 60;
       if (t >= 15 && t < 30) rightG = -350;
       else if (t >= 35 && t < 40) rightG = null;
-      return { leftG: 200, rightG, rainMm: 0 };
+      return { leftG: 80, rightG, rainMm: 0 };
     },
     expectStates: [STATES.NORMAL, STATES.CHECK, STATES.NORMAL, STATES.CHECK, STATES.NORMAL],
     expectFlags: [],
@@ -117,15 +118,15 @@ export const SCENARIOS = [
   {
     id: "spike",
     name: "노이즈/충격",
-    description: "10분 +950g, 20·30분 +700g 순간 스파이크 (샘플 1개)",
+    description: "10분 +600g, 20·30분 +300g 순간 스파이크 (샘플 1개)",
     durationMin: 40,
     at: (t) => {
       // 샘플 1개(10초)만 걸리도록 0.1분 폭
       const hit = (m) => t >= m && t < m + 0.1;
       let bump = 0;
-      if (hit(10)) bump = 950; // MAX_JUMP_G 초과 → 이상치 필터 확인
-      if (hit(20) || hit(30)) bump = 700; // 필터 미만 → 디바운싱 확인
-      return { leftG: 160 + bump, rightG: 140, rainMm: 0 };
+      if (hit(10)) bump = 600; // MAX_JUMP_G(450) 초과 → 이상치 필터 확인
+      if (hit(20) || hit(30)) bump = 300; // 필터 미만이지만 주의 기준(250) 초과 → 디바운싱 확인
+      return { leftG: 70 + bump, rightG: 60, rainMm: 0 };
     },
     truth: () => STATES.NORMAL,
     expectStates: [STATES.NORMAL],
