@@ -7,10 +7,12 @@ import { Summary } from "./components/Summary.jsx";
 import { PriorityList } from "./components/PriorityList.jsx";
 import { MapView } from "./components/MapView.jsx";
 import { DrainDetail } from "./components/DrainDetail.jsx";
+import { sortByPriority } from "./ui/format.js";
 
 export default function App() {
   const sim = useSimulation();
-  const [selectedId, setSelectedId] = useState(() => sim.stations[0]?.id ?? null);
+  // 처음에는 우선순위 1위 지점을 선택
+  const [selectedId, setSelectedId] = useState(() => sortByPriority(sim.stations)[0]?.id ?? null);
   const selected = sim.stations.find((s) => s.id === selectedId) ?? null;
 
   return (
@@ -22,8 +24,8 @@ export default function App() {
 
       <div className="layout">
         <aside className="layout-side">
-          <Summary />
-          <PriorityList stations={sim.stations} selectedId={selectedId} onSelect={setSelectedId} />
+          <Summary stations={sim.stations} />
+          <PriorityList stations={sim.stations} now={sim.now} selectedId={selectedId} onSelect={setSelectedId} />
         </aside>
         <main className="layout-main">
           <MapView />

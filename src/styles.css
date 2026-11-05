@@ -435,6 +435,88 @@ button {
   border-color: var(--accent);
 }
 
+/* ---------- 9-1. 상태 요약 ---------- */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2);
+}
+.summary-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+}
+.summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.summary-num {
+  font-size: var(--fs-metric);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.summary-cell.st-normal { color: var(--st-normal); background: var(--st-normal-bg); }
+.summary-cell.st-warn { color: var(--st-warn); background: var(--st-warn-bg); }
+.summary-cell.st-danger { color: var(--st-danger); background: var(--st-danger-bg); }
+.summary-cell.st-check { color: var(--st-check); background: var(--st-check-bg); }
+
+/* ---------- 9-2. 수거 우선순위 ---------- */
+.prio-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 72px;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.prio-rank {
+  color: var(--text-mute);
+  font-weight: 700;
+  text-align: center;
+}
+.prio-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.prio-name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.prio-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.prio-score {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  font-weight: 700;
+}
+.score-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--st-check-bg);
+  overflow: hidden;
+}
+.score-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  transition: width var(--ease);
+}
+.score-fill.st-normal { background: var(--st-normal); }
+.score-fill.st-warn { background: var(--st-warn); }
+.score-fill.st-danger { background: var(--st-danger); }
+
 /* ---------- 10. 지도 (F4) ---------- */
 .map-card {
   padding: 0;
