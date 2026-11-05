@@ -276,20 +276,194 @@ button {
   }
 }
 
-/* ---------- 7. 임시 확인 화면 (F2에서 제거) ---------- */
-.tmp-table {
-  width: 100%;
-  border-collapse: collapse;
+/* ---------- 7. 레이아웃 (DESIGN.md 4장) ---------- */
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5) var(--sp-5);
+  align-items: start;
+}
+
+.layout-side,
+.layout-main {
+  display: grid;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+/* 폭 < 1100px: 세로로 쌓기 */
+@media (max-width: 1099px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--sp-3);
+  }
+}
+
+/* 배너·토스트 영역 (F6) */
+.alert-area:empty {
+  display: none;
+}
+
+/* ---------- 8. 상단바 · 시연 제어 ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* Leaflet 지도(400~)보다 위 */
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-5);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.topbar-title h1 {
+  font-size: var(--fs-title);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.topbar-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-sub);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-mute);
+}
+.live-dot.is-on {
+  background: var(--st-normal);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+}
+.control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.control-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-small);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.control-range {
+  width: 96px;
+  accent-color: var(--accent);
+}
+.control-value {
+  min-width: 56px;
+  font-size: var(--fs-small);
+  color: var(--text-sub);
+}
+.control-label {
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+.control-select {
+  height: 32px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font: inherit;
   font-size: var(--fs-small);
 }
-.tmp-table th,
-.tmp-table td {
-  padding: var(--sp-2);
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-  vertical-align: top;
+
+/* ---------- 9. 목록 공통 ---------- */
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
 }
-.tmp-table th {
-  color: var(--text-sub);
-  font-weight: 600;
+
+.list-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+}
+.list-row:hover {
+  background: var(--bg);
+}
+.list-row.is-selected {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* ---------- 10. 지도 (F4) ---------- */
+.map-card {
+  padding: 0;
+  overflow: hidden;
+}
+.map-placeholder {
+  height: 360px;
+  display: grid;
+  place-items: center;
+}
+
+/* ---------- 11. 상세 (F5) ---------- */
+.detail-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-3);
+}
+.detail-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin-right: var(--sp-2);
+}
+
+.reason-list {
+  margin: 0 0 var(--sp-3);
+  padding-left: 1.2em;
+}
+.reason-list li + li {
+  margin-top: 2px;
 }
