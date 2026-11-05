@@ -37,7 +37,9 @@
  * @property {string} name
  * @property {number} lat
  * @property {number} lng
- * @property {boolean} real        실물 센서 지점이면 true
+ * @property {boolean} real        실물 센서를 연결할 지점이면 true (설정값)
+ * @property {boolean} live        지금 서버의 실물 데이터로 판정 중이면 true (실시간 모드)
+ * @property {number} clockNow     "N분 전" 계산용 현재 시각 — 실물 지점은 실제 시계, 가상 지점은 시뮬레이터 시계
  * @property {Sample|null} latest  가장 최근 샘플
  * @property {Sample[]} history    최근 샘플 (그래프용)
  * @property {Judgement} judgement 현재 판정

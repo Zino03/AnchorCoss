@@ -2,7 +2,9 @@
 import { STATES, CHECK_CAUSE } from "../logic/states.js";
 import { fmtAgo, rssiLevel } from "../ui/format.js";
 
-export function CommStatus({ station, now }) {
+export function CommStatus({ station, now: simNow }) {
+  // 실물 지점은 실제 시계, 가상 지점은 시뮬레이터 시계로 경과 시간을 계산
+  const now = station.clockNow ?? simNow;
   const s = station.latest;
   const j = station.judgement;
   const stale = j.state === STATES.CHECK && j.checkCause === CHECK_CAUSE.STALE;

@@ -31,7 +31,7 @@ export function PriorityList({ stations, now, selectedId, onSelect }) {
                   </span>
                   <span className="prio-meta">
                     <StateBadge state={j.state} />
-                    <span className="muted">{fmtAgo(now, s.latest?.ts)}</span>
+                    <span className="muted">{fmtAgo(s.clockNow ?? now, s.latest?.ts)}</span>
                   </span>
                 </span>
                 <span className="prio-score">

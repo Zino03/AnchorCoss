@@ -11,18 +11,25 @@ const fmtClock = (ts) =>
   });
 
 /** 상단바: 제목 · 시뮬레이션 시각 · 시연 제어(전체 적용) */
-export function TopBar({ sim, rainMode, onRainMode, weather }) {
+export function TopBar({ sim, mode, onMode, weather, feed, realStation }) {
   return (
     <header className="topbar">
       <div className="topbar-title">
         <h1>빗물받이 막힘 감지 대시보드</h1>
-        <span className="topbar-clock num" title="시뮬레이션 시각">
+        <span className="topbar-clock num" title="시뮬레이션 시각 (가상 지점 기준)">
           <span className={`live-dot${sim.playing ? " is-on" : ""}`} aria-hidden="true" />
           {fmtClock(sim.now)}
           {!sim.playing && <span className="muted"> · 일시정지</span>}
         </span>
       </div>
-      <ScenarioControls sim={sim} rainMode={rainMode} onRainMode={onRainMode} weather={weather} />
+      <ScenarioControls
+        sim={sim}
+        mode={mode}
+        onMode={onMode}
+        weather={weather}
+        feed={feed}
+        realStation={realStation}
+      />
     </header>
   );
 }

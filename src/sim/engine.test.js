@@ -72,6 +72,77 @@ describe("engine", () => {
     expect(st2.judgement.state).toBe(STATES.DANGER);
   });
 
+  describe("실물 지점 (setRealStations / ingestReal)", () => {
+    // 시뮬레이터 시계는 0부터 10초씩, 실제 시계는 따로 움직인다
+    const WALL0 = 1_800_000_000_000;
+    function makeLive() {
+      let wall = WALL0;
+      const e = createEngine({ sim: createSimulator({ seed: 1, startTs: 0 }), wallClock: () => wall });
+      return { e, advanceWall: (ms) => (wall += ms), wall: () => wall };
+    }
+    const real = (ts, leftG, rightG = leftG) => ({ stationId: "st-1", ts, leftG, rightG, rainMm: 0, rssi: -60, batteryPct: 90 });
+    const st1 = (e) => e.snapshot().stations.find((s) => s.id === "st-1");
+
+    it("지정 직후 데이터가 없으면 점검 필요(수신 기록 없음), 실제 시계를 쓴다", () => {
+      const { e } = makeLive();
+      e.setRealStations(["st-1"]);
+      const s = st1(e);
+      expect(s.live).toBe(true);
+      expect(s.clockNow).toBe(WALL0);
+      expect(s.judgement.state).toBe(STATES.CHECK);
+      expect(s.judgement.reason[0]).toContain("수신 기록 없음");
+    });
+
+    it("가상 샘플은 무시하고 서버 샘플로 판정, 다른 지점은 계속 가상", () => {
+      const { e, wall } = makeLive();
+      e.setRealStations(["st-1"]);
+      e.ingestReal("st-1", [real(wall() - 20_000, 400), real(wall() - 10_000, 410)]);
+      run(e, 30);
+      const s = st1(e);
+      expect(s.latest.leftG).toBe(410); // 시뮬레이터 값으로 덮이지 않음
+      expect(s.history.every((x) => x.leftG >= 400)).toBe(true);
+      expect(s.judgement.state).toBe(STATES.WARN); // 820g
+      expect(e.snapshot().stations.find((x) => x.id === "st-2").history.length).toBeGreaterThan(0);
+    });
+
+    it("시뮬레이터 시계가 아무리 앞서가도 실물 지점은 실제 시계로 통신 두절 판정", () => {
+      const { e, wall, advanceWall } = makeLive();
+      e.setRealStations(["st-1"]);
+      e.ingestReal("st-1", [real(wall(), 100)]);
+      run(e, 600); // 시뮬레이터 100분 경과
+      expect(st1(e).judgement.state).toBe(STATES.NORMAL); // 실제로는 거의 안 지났음
+      advanceWall(6 * 60_000); // 실제 6분 무수신
+      e.step();
+      expect(st1(e).judgement.state).toBe(STATES.CHECK);
+      expect(st1(e).judgement.checkCause).toBe("stale");
+    });
+
+    it("이미 반영한 시각 이전 샘플은 건너뛴다", () => {
+      const { e, wall } = makeLive();
+      e.setRealStations(["st-1"]);
+      e.ingestReal("st-1", [real(wall(), 100)]);
+      e.ingestReal("st-1", [real(wall() - 5000, 999)]);
+      expect(st1(e).latest.leftG).toBe(100);
+    });
+
+    it("모드 전환 직후 첫 상태 전환은 알리지 않는다 (가상 복귀 포함)", () => {
+      const { e, wall } = makeLive();
+      e.setRealStations(["st-1"]);
+      expect(e.ingestReal("st-1", [real(wall(), 100)])).toEqual([]); // 점검 → 정상, 알림 없음
+      e.setRealStations([]);
+      expect(st1(e).live).toBe(false);
+      const evs = run(e, 3);
+      expect(evs.filter((x) => x.stationId === "st-1")).toEqual([]);
+      expect(st1(e).judgement.state).toBe(STATES.NORMAL);
+    });
+
+    it("지정되지 않은 지점의 ingestReal은 무시", () => {
+      const { e, wall } = makeLive();
+      expect(e.ingestReal("st-1", [real(wall(), 100)])).toEqual([]);
+      expect(st1(e).latest).toBeNull();
+    });
+  });
+
   it("강우 수동 입력이 스냅샷과 플래그에 반영", () => {
     const e = make();
     e.setRain(20);

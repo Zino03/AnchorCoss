@@ -10,6 +10,13 @@ import { REGION } from "../src/config.js";
 
 const TTL_MS = 10 * 60 * 1000; // 실황은 1시간 단위라 10분 캐시면 충분 (호출 수 제한 대비)
 const cache = new Map(); // "nx,ny" → { at, data }
+let latest = null; // 가장 최근에 받은 대상 지역(REGION) 실황
+
+/** 센서 수신 시 강우를 붙이기 위한 최신 실황 (1시간 넘게 지난 값은 쓰지 않음) */
+export function peekLatestWeather() {
+  if (!latest || Date.now() - latest.fetchedAt > 60 * 60 * 1000) return null;
+  return latest;
+}
 
 export default async function handler(req, res) {
   const key = process.env.KMA_SERVICE_KEY;
@@ -35,6 +42,7 @@ export default async function handler(req, res) {
     const w = await fetchNcst({ key, nx, ny });
     const data = { ok: true, region: REGION.name, lat, lng, ...w, fetchedAt: Date.now() };
     cache.set(ck, { at: Date.now(), data });
+    if (lat === REGION.lat && lng === REGION.lng) latest = data;
     res.setHeader("Cache-Control", "s-maxage=600, stale-while-revalidate=300");
     return res.status(200).json(data);
   } catch (e) {
@@ -47,4 +55,5 @@ export default async function handler(req, res) {
 /** 테스트용: 캐시 비우기 */
 export function _clearCache() {
   cache.clear();
+  latest = null;
 }

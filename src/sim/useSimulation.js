@@ -12,6 +12,8 @@
 // sim.setScenario(stationId, scenarioId)
 // sim.step()                       일시정지 중 한 틱 진행
 // sim.reset()                      처음부터 다시
+// sim.setRealStations(ids)         실물 지점 지정 (실시간 모드). [] = 모두 가상
+// sim.ingestReal(id, samples, { silent })  서버에서 받은 실물 샘플 반영. silent면 알림 없이 (이력 복원용)
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createEngine } from "./engine.js";
@@ -41,12 +43,19 @@ export function useSimulation({ seed = 42, intervalMs = 1000, warmupSteps = 30 }
   const [speed, setSpeed] = useState(1);
   const [runId, setRunId] = useState(0); // reset()마다 증가 — 화면 쪽 상태(알림 닫기 기록 등) 초기화용
 
-  const advance = useCallback((n) => {
-    const evs = [];
-    for (let i = 0; i < n; i++) evs.push(...engineRef.current.step());
-    setSnap(engineRef.current.snapshot());
-    if (evs.length) setEvents((prev) => [...evs.reverse(), ...prev].slice(0, EVENT_LIMIT));
+  const pushEvents = useCallback((evs) => {
+    if (evs.length) setEvents((prev) => [...[...evs].reverse(), ...prev].slice(0, EVENT_LIMIT));
   }, []);
+
+  const advance = useCallback(
+    (n) => {
+      const evs = [];
+      for (let i = 0; i < n; i++) evs.push(...engineRef.current.step());
+      setSnap(engineRef.current.snapshot());
+      pushEvents(evs);
+    },
+    [pushEvents],
+  );
 
   useEffect(() => {
     if (!playing) return undefined;
@@ -72,6 +81,15 @@ export function useSimulation({ seed = 42, intervalMs = 1000, warmupSteps = 30 }
     collect: useCallback((id) => act((e) => e.collect(id)), [act]),
     setScenario: useCallback((id, sc) => act((e) => e.setScenario(id, sc)), [act]),
     step: useCallback(() => advance(1), [advance]),
+    setRealStations: useCallback((ids) => act((e) => e.setRealStations(ids)), [act]),
+    ingestReal: useCallback(
+      (id, samples, { silent = false } = {}) => {
+        const evs = engineRef.current.ingestReal(id, samples);
+        setSnap(engineRef.current.snapshot());
+        if (!silent) pushEvents(evs);
+      },
+      [pushEvents],
+    ),
     reset: useCallback(() => {
       engineRef.current = makeEngine(seed, warmupSteps);
       setSnap(engineRef.current.snapshot());
