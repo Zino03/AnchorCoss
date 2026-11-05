@@ -1,1 +1,1030 @@
-body { margin: 0; font-family: system-ui, sans-serif; }
+/* =========================================================
+   빗물받이 막힘 감지 대시보드 — 스타일 (docs/DESIGN.md 기준)
+   색·간격은 :root 변수만 사용한다. 팀 색상 확정 시 --accent 만 교체.
+   ========================================================= */
+
+/* ---------- 1. 디자인 토큰 ---------- */
+:root {
+  /* 배경·표면 */
+  --bg: #f4f6f9;
+  --surface: #ffffff;
+  --border: #e2e6ec;
+
+  /* 텍스트 */
+  --text: #1c2430;
+  --text-sub: #5b6676;
+  --text-mute: #697386; /* 흰 배경 대비 4.78:1 */
+
+  /* 포인트 (팀 색상 확정 시 교체) */
+  --accent: #2563eb;
+  --accent-soft: #e8efff;
+
+  /* 상태 색: 진한 색(글자/아이콘/선) + 연한 색(배경) */
+  --st-normal: #16a34a;
+  --st-normal-bg: #e7f6ec;
+  --st-warn: #d97706;
+  --st-warn-bg: #fff4dd;
+  --st-danger: #dc2626;
+  --st-danger-bg: #fde8e8;
+  --st-check: #6b7280;
+  --st-check-bg: #eceef1;
+
+  /* 글자·아이콘용 진한 변형 — 연한 배경 위에서 대비 4.5:1 이상 (채움·선·마커는 위 색 사용) */
+  --st-normal-text: #166534;
+  --st-warn-text: #b45309;
+  --st-danger-text: #b91c1c;
+  --st-check-text: #4b5563;
+
+  /* 차트 */
+  --chart-left: #2563eb;
+  --chart-right: #0d9488;
+  --chart-total: #1c2430;
+  --chart-rain: #dbeafe;
+
+  /* 모양 */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 1px 3px rgba(16, 24, 40, 0.08);
+
+  /* 간격 (4px 배수) */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 32px;
+
+  /* 글자 */
+  --font: "Pretendard", "Noto Sans KR", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --fs-title: 20px;
+  --fs-card-title: 14px;
+  --fs-metric: 32px;
+  --fs-body: 15px;
+  --fs-small: 13px;
+
+  /* 모션 */
+  --ease: 150ms ease;
+}
+
+/* ---------- 2. 기본 ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: var(--fs-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.muted {
+  color: var(--text-mute);
+  font-size: var(--fs-small);
+}
+
+.sub {
+  color: var(--text-sub);
+}
+
+/* ---------- 3. 카드 ---------- */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: var(--sp-4);
+}
+
+.card-title {
+  font-size: var(--fs-card-title);
+  font-weight: 600;
+  color: var(--text-sub);
+  margin-bottom: var(--sp-3);
+}
+
+/* 상태별 카드 강조 (주의: 좌측 라인, 위험: 배경, 점검: 흐리게) */
+.card.is-warn {
+  border-left: 4px solid var(--st-warn);
+}
+.card.is-danger {
+  background: var(--st-danger-bg);
+  border-color: var(--st-danger);
+}
+.card.is-check {
+  opacity: 0.75;
+}
+
+/* ---------- 4. 상태 뱃지 / 플래그 태그 ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  padding: 2px 10px;
+  border-radius: 999px;
+  font-size: var(--fs-small);
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background var(--ease), color var(--ease);
+}
+.badge-icon {
+  font-size: 0.9em;
+}
+.badge.st-normal {
+  color: var(--st-normal-text);
+  background: var(--st-normal-bg);
+}
+.badge.st-warn {
+  color: var(--st-warn-text);
+  background: var(--st-warn-bg);
+}
+.badge.st-danger {
+  color: var(--st-danger-text);
+  background: var(--st-danger-bg);
+}
+.badge.st-check {
+  color: var(--st-check-text);
+  background: var(--st-check-bg);
+}
+.badge-pending {
+  font-weight: 400;
+  opacity: 0.8;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 1px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text-sub);
+  background: var(--st-check-bg);
+  white-space: nowrap;
+}
+.tag.is-rain {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: var(--sp-1);
+}
+
+/* 상태 색 텍스트 (숫자 등) */
+.tx-normal { color: var(--st-normal-text); }
+.tx-warn { color: var(--st-warn-text); }
+.tx-danger { color: var(--st-danger-text); }
+.tx-check { color: var(--st-check-text); }
+
+/* ---------- 5. 버튼 ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--sp-1);
+  height: 32px;
+  padding: 0 var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font-size: var(--fs-small);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+}
+.btn:hover {
+  background: var(--bg);
+}
+.btn:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+.btn.is-primary {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.btn.is-primary:hover {
+  filter: brightness(0.95);
+}
+.btn.is-active {
+  color: var(--accent);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* 버튼 묶음 (배속 1×/5×/20× 등) */
+.btn-group {
+  display: inline-flex;
+}
+.btn-group .btn {
+  border-radius: 0;
+}
+.btn-group .btn + .btn {
+  margin-left: -1px;
+}
+.btn-group .btn:first-child {
+  border-radius: var(--radius-sm) 0 0 var(--radius-sm);
+}
+.btn-group .btn:last-child {
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+/* ---------- 6. 모션 ---------- */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.pulse {
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---------- 7. 레이아웃 (DESIGN.md 4장) ---------- */
+.app {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: var(--sp-4);
+  padding: var(--sp-4) var(--sp-5) var(--sp-5);
+  align-items: start;
+}
+
+.layout-side,
+.layout-main {
+  display: grid;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+
+/* 폭 < 1100px: 세로로 쌓기 */
+@media (max-width: 1099px) {
+  .layout {
+    grid-template-columns: minmax(0, 1fr);
+    padding: var(--sp-3);
+  }
+}
+
+/* ---------- 8. 상단바 · 시연 제어 ---------- */
+.sticky-head {
+  position: sticky;
+  top: 0;
+  z-index: 1000; /* Leaflet 지도(400~800)보다 위 */
+}
+
+.topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3) var(--sp-5);
+  padding: var(--sp-3) var(--sp-5);
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.topbar-title {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-3);
+  min-width: 0;
+}
+.topbar-title h1 {
+  font-size: var(--fs-title);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.topbar-clock {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--text-sub);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-mute);
+}
+.live-dot.is-on {
+  background: var(--st-normal);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2) var(--sp-4);
+}
+.control-group {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.control-check {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-size: var(--fs-small);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.control-range {
+  width: 96px;
+  accent-color: var(--accent);
+}
+.control-value {
+  min-width: 56px;
+  font-size: var(--fs-small);
+  color: var(--text-sub);
+}
+.control-sep {
+  width: 1px;
+  height: 20px;
+  background: var(--border);
+}
+.control-select {
+  height: 32px;
+  padding: 0 var(--sp-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  font: inherit;
+  font-size: var(--fs-small);
+}
+
+/* ---------- 8-1. 위험 배너 ---------- */
+.banners {
+  display: grid;
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+}
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-5);
+  background: var(--st-danger-bg);
+  border-left: 6px solid var(--st-danger);
+  color: var(--text);
+  animation: slide-down 200ms ease-out;
+}
+.banner.is-rain {
+  background: linear-gradient(90deg, var(--st-danger-bg), var(--accent-soft));
+}
+.banner-icon {
+  color: var(--st-danger-text);
+  font-size: 20px;
+}
+.banner-text {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px var(--sp-3);
+  min-width: 0;
+}
+.banner-text strong {
+  color: var(--st-danger-text);
+}
+.banner-reason {
+  font-size: var(--fs-small);
+  color: var(--text-sub);
+}
+.banner-close,
+.toast-close {
+  border: none;
+  background: none;
+  color: var(--text-mute);
+  font-size: 14px;
+  padding: var(--sp-1) var(--sp-2);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+}
+.banner-close:hover,
+.toast-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text);
+}
+.banner-more {
+  padding: 4px var(--sp-5);
+  background: var(--st-danger-bg);
+  color: var(--st-danger-text);
+  font-size: var(--fs-small);
+  font-weight: 600;
+}
+
+/* ---------- 8-2. 토스트 ---------- */
+.toasts {
+  position: fixed;
+  right: var(--sp-5);
+  bottom: var(--sp-5);
+  z-index: 1100;
+  display: grid;
+  gap: var(--sp-2);
+  width: 340px;
+  pointer-events: none;
+}
+.toast {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid;
+  border-radius: var(--radius-sm);
+  box-shadow: 0 4px 12px rgba(16, 24, 40, 0.12);
+  pointer-events: auto;
+  animation: slide-in 200ms ease-out;
+}
+.toast.st-normal { border-left-color: var(--st-normal); }
+.toast.st-warn { border-left-color: var(--st-warn); }
+.toast.st-check { border-left-color: var(--st-check); }
+.toast-icon {
+  font-weight: 700;
+}
+.toast.st-normal .toast-icon { color: var(--st-normal-text); }
+.toast.st-warn .toast-icon { color: var(--st-warn-text); }
+.toast.st-check .toast-icon { color: var(--st-check-text); }
+.toast-body {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.toast-body strong {
+  font-size: var(--fs-small);
+}
+.toast-reason {
+  font-size: 12px;
+  color: var(--text-sub);
+}
+
+@keyframes slide-down {
+  from { transform: translateY(-8px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes slide-in {
+  from { transform: translateX(16px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+
+/* ---------- 9. 목록 공통 ---------- */
+.plain-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.list-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--ease), border-color var(--ease);
+}
+.list-row:hover {
+  background: var(--bg);
+}
+.list-row.is-selected {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* ---------- 9-1. 상태 요약 ---------- */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-2);
+}
+.summary-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+}
+.summary-label {
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.summary-num {
+  font-size: var(--fs-metric);
+  font-weight: 700;
+  line-height: 1.1;
+}
+.summary-cell.st-normal { color: var(--st-normal-text); background: var(--st-normal-bg); }
+.summary-cell.st-warn { color: var(--st-warn-text); background: var(--st-warn-bg); }
+.summary-cell.st-danger { color: var(--st-danger-text); background: var(--st-danger-bg); }
+.summary-cell.st-check { color: var(--st-check-text); background: var(--st-check-bg); }
+
+/* ---------- 9-2. 수거 우선순위 ---------- */
+.prio-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) 72px;
+  align-items: center;
+  gap: var(--sp-3);
+}
+.prio-rank {
+  color: var(--text-mute);
+  font-weight: 700;
+  text-align: center;
+}
+.prio-main {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+.prio-name {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-1);
+  font-weight: 600;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.prio-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.prio-score {
+  display: grid;
+  justify-items: end;
+  gap: 4px;
+  font-weight: 700;
+}
+.score-bar {
+  width: 100%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--st-check-bg);
+  overflow: hidden;
+}
+.score-fill {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  transition: width var(--ease);
+}
+.score-fill.st-normal { background: var(--st-normal); }
+.score-fill.st-warn { background: var(--st-warn); }
+.score-fill.st-danger { background: var(--st-danger); }
+
+/* ---------- 10. 지도 (F4) ---------- */
+.map-card {
+  position: relative;
+  padding: 0;
+  overflow: hidden;
+}
+.map {
+  height: 400px;
+  background: #e9edf2; /* 타일이 안 뜰 때 배경 */
+  font-family: var(--font);
+}
+
+/* divIcon 기본 흰 상자 제거 */
+.map-icon {
+  background: none;
+  border: none;
+}
+
+.map-marker {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform var(--ease), background var(--ease);
+}
+.map-marker.st-normal { background: var(--st-normal); }
+.map-marker.st-warn { background: var(--st-warn); }
+.map-marker.st-danger { background: var(--st-danger); }
+.map-marker.st-check { background: var(--st-check); }
+
+.map-marker.is-selected {
+  transform: scale(1.3);
+  border: 3px solid var(--text);
+}
+
+/* 위험 마커: 퍼져 나가는 링 */
+.map-marker.is-alert::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid var(--st-danger);
+  animation: ring 1.6s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes ring {
+  from { transform: scale(0.8); opacity: 0.9; }
+  to { transform: scale(1.7); opacity: 0; }
+}
+
+.map-offline {
+  position: absolute;
+  top: var(--sp-3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  margin: 0;
+  padding: 6px var(--sp-3);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  color: var(--st-warn-text);
+  white-space: nowrap;
+}
+.gauge-empty {
+  min-height: 150px;
+  display: grid;
+  place-items: center;
+}
+
+.map-legend {
+  position: absolute;
+  left: var(--sp-3);
+  bottom: var(--sp-3);
+  z-index: 500; /* 지도 타일·마커 위, 컨트롤(800) 아래 */
+  display: flex;
+  gap: var(--sp-3);
+  margin: 0;
+  padding: 6px var(--sp-3);
+  list-style: none;
+  background: rgba(255, 255, 255, 0.92);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+}
+.map-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.legend-dot {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 9px;
+  font-weight: 700;
+}
+.legend-dot.st-normal { background: var(--st-normal); }
+.legend-dot.st-warn { background: var(--st-warn); }
+.legend-dot.st-danger { background: var(--st-danger); }
+.legend-dot.st-check { background: var(--st-check); }
+
+/* ---------- 11. 상세 ---------- */
+.detail {
+  display: grid;
+  gap: var(--sp-5);
+}
+/* 상세 카드는 위험이어도 배경을 칠하지 않는다 (그래프 가독성). 테두리로만 강조 */
+.card.detail.is-danger {
+  background: var(--surface);
+  border-color: var(--st-danger);
+  box-shadow: 0 0 0 1px var(--st-danger), var(--shadow);
+}
+
+.detail-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.detail-name {
+  font-size: 18px;
+  font-weight: 700;
+  margin-right: var(--sp-2);
+}
+.detail-actions {
+  margin-left: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+.detail-scenario {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+}
+
+.detail-top {
+  display: grid;
+  grid-template-columns: 260px minmax(0, 1fr);
+  gap: var(--sp-5);
+}
+@media (max-width: 1299px) {
+  .detail-top {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.detail-info {
+  display: grid;
+  gap: var(--sp-4);
+  align-content: start;
+}
+.block-title {
+  font-size: var(--fs-card-title);
+  font-weight: 600;
+  color: var(--text-sub);
+  margin-bottom: var(--sp-2);
+}
+
+.reason-list {
+  margin: 0;
+  padding-left: 1.2em;
+}
+.reason-list li + li {
+  margin-top: 2px;
+}
+
+/* ---------- 11-1. 로드셀 게이지 ---------- */
+.gauge {
+  display: grid;
+  gap: var(--sp-2);
+}
+.gauge-body {
+  padding: var(--sp-2) var(--sp-4) var(--sp-3);
+  /* 아치형(U자) 바닥 단면 */
+  border: 3px solid var(--text-mute);
+  border-top: none;
+  border-radius: 0 0 90px 90px / 0 0 40px 40px;
+  background: linear-gradient(to bottom, transparent, var(--bg));
+}
+.gauge-tracks {
+  position: relative;
+  height: 150px;
+  display: flex;
+  justify-content: space-around;
+}
+.gauge-labels {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 4px;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--text-sub);
+}
+.gauge-labels span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.gauge-track {
+  position: relative;
+  width: 44px;
+  height: 100%;
+  border-radius: 6px 6px 4px 4px;
+  background: var(--st-check-bg);
+  overflow: hidden;
+}
+.gauge-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  transition: height 300ms ease, background var(--ease);
+}
+.gauge-fill.st-normal { background: var(--st-normal); }
+.gauge-fill.st-warn { background: var(--st-warn); }
+.gauge-fill.st-danger { background: var(--st-danger); }
+.gauge-fill.st-check {
+  background: repeating-linear-gradient(45deg, var(--st-check-bg), var(--st-check-bg) 6px, #d5d9df 6px, #d5d9df 12px);
+}
+.gauge-fault {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: var(--st-check-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+.gauge-heavy {
+  padding: 0 6px;
+  border-radius: 4px;
+  background: var(--text);
+  color: #fff;
+  font-size: 11px;
+  font-style: normal;
+  white-space: nowrap;
+}
+/* 기준선: .gauge-tracks 기준 bottom % (막대 높이와 같은 척도) */
+.gauge-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1.5px dashed;
+  pointer-events: none;
+  z-index: 2;
+}
+.gauge-line span {
+  position: absolute;
+  right: 4px;
+  top: -16px;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--surface);
+  padding: 0 3px;
+  border-radius: 3px;
+}
+.gauge-line.is-danger { border-color: var(--st-danger); color: var(--st-danger-text); }
+.gauge-line.is-warn { border-color: var(--st-warn); color: var(--st-warn-text); }
+
+.gauge-values {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-small);
+  color: var(--text-sub);
+}
+.gauge-values b {
+  color: var(--text);
+}
+
+/* ---------- 11-2. 중량 그래프 ---------- */
+.chart-empty {
+  height: 240px;
+  display: grid;
+  place-items: center;
+}
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  margin: var(--sp-2) 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--text-sub);
+}
+.chart-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.swatch {
+  width: 16px;
+  height: 2px;
+  border-radius: 1px;
+}
+.swatch.is-thick { height: 3px; }
+.swatch.is-area { height: 10px; }
+.swatch.is-vline {
+  width: 2px;
+  height: 12px;
+  background: var(--text-mute);
+}
+
+/* ---------- 11-3. 통신 상태 ---------- */
+.comm-grid {
+  display: grid;
+  grid-template-columns: repeat(3, auto);
+  justify-content: start;
+  gap: var(--sp-5);
+  margin: 0;
+}
+.comm-grid dt {
+  font-size: 12px;
+  color: var(--text-mute);
+}
+.comm-grid dd {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+}
+.comm.is-stale .comm-grid {
+  opacity: 0.5;
+}
+.comm-alert {
+  margin-bottom: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--radius-sm);
+  background: var(--st-check-bg);
+  color: var(--st-check-text);
+  font-weight: 600;
+  font-size: var(--fs-small);
+}
+.rssi {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 14px;
+}
+.rssi-bar {
+  width: 4px;
+  border-radius: 1px;
+  background: var(--border);
+}
+.rssi-bar.is-on {
+  background: var(--text-sub);
+}
+
+/* ---------- 11-4. 타임라인 ---------- */
+.timeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 220px;
+  overflow-y: auto;
+}
+.timeline-row {
+  display: grid;
+  grid-template-columns: 72px auto minmax(0, 1fr);
+  align-items: center;
+  gap: var(--sp-3);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: var(--fs-small);
+}
+.timeline-row:last-child {
+  border-bottom: none;
+}
+.timeline-change {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
