@@ -6,7 +6,7 @@ export const COLORS = {
   total: "#1c2430", // --chart-total
   rain: "#dbeafe", // --chart-rain
   grid: "#e2e6ec", // --border
-  axis: "#8a94a3", // --text-mute
+  axis: "#697386", // --text-mute
   normal: "#16a34a",
   warn: "#d97706",
   danger: "#dc2626",

@@ -55,7 +55,8 @@ lib/            기상청 API 호출·파싱
 scripts/        시나리오 출력 등 보조 스크립트
 public/         정적 파일
 src/
-  components/   화면 컴포넌트
+  components/   화면 컴포넌트 (TopBar, ScenarioControls, Summary, PriorityList, MapView, DrainDetail, LoadCellGauge, WeightChart, CommStatus, Timeline, Toasts, StateBadge)
+  ui/           화면 표시용 순수 함수·차트 색 (format.js, colors.js)
   logic/        상태 정의·판정 로직·데이터 계약 (states.js, judge.js, evaluate.js, types.js)
   sim/          가상 데이터 생성기·엔진·화면용 훅 (scenario.js, simulator.js, engine.js, useSimulation.js)
   config.js     지점·임계값 설정
@@ -68,8 +69,9 @@ src/
 - [x] 상태 정의·임계값 설정, 데이터 계약 (`states.js`, `config.js`, `types.js`)
 - [x] 가상 데이터 생성기·시나리오 8종 (`src/sim/`)
 - [x] 판정 로직 + 테스트, 단순 임계값 방식과 성능 비교 (`src/logic/judge.js`, `evaluate.js`)
-- [x] 시뮬레이션 훅 `useSimulation` (`src/sim/engine.js`, `useSimulation.js`) + 임시 확인 화면
-- [ ] 대시보드 화면 (`DESIGN.md` 기준)
+- [x] 시뮬레이션 훅 `useSimulation` (`src/sim/engine.js`, `useSimulation.js`)
+- [x] 대시보드 화면 (`docs/DESIGN.md` 기준): 상단바·시연 제어, 상태 요약, 수거 우선순위, 지도, 상세(로드셀 게이지·중량 그래프·통신 상태·타임라인), 위험 배너·토스트
+- [x] 접근성 점검: 상태 글자색 대비 4.5:1 이상, 키보드 조작, 동작 줄이기 대응
 - [ ] 기상청 API 연동 (인증키 수령 후)
 
 ## 배포

@@ -19,6 +19,7 @@ export function MapView({ stations, selectedId, onSelect }) {
   const onSelectRef = useRef(onSelect);
   onSelectRef.current = onSelect;
   const [ready, setReady] = useState(false);
+  const [tilesFailed, setTilesFailed] = useState(false); // 오프라인 등으로 타일을 못 불러옴
 
   // 지도 생성 (한 번)
   useEffect(() => {
@@ -29,7 +30,9 @@ export function MapView({ stations, selectedId, onSelect }) {
         [MAP_CENTER.lat, MAP_CENTER.lng],
         MAP_CENTER.zoom,
       );
-      L.tileLayer(TILE_URL, { maxZoom: 19, attribution: TILE_ATTR }).addTo(map);
+      const tiles = L.tileLayer(TILE_URL, { maxZoom: 19, attribution: TILE_ATTR }).addTo(map);
+      tiles.on("tileerror", () => setTilesFailed(true));
+      tiles.on("tileload", () => setTilesFailed(false));
       ctxRef.current = { L, map, markers: new Map(), fitted: false };
       setReady(true);
     });
@@ -96,6 +99,11 @@ export function MapView({ stations, selectedId, onSelect }) {
   return (
     <section className="card map-card" aria-label="지점 지도">
       <div ref={elRef} className="map" />
+      {tilesFailed && (
+        <p className="map-offline" role="status">
+          지도 배경을 불러오지 못했습니다 (인터넷 확인) — 지점 마커와 선택은 정상 동작합니다.
+        </p>
+      )}
       <ul className="map-legend" aria-label="범례">
         {LEGEND.map((st) => (
           <li key={st}>

@@ -30,6 +30,9 @@ function Track({ value }) {
 }
 
 export function LoadCellGauge({ sample, flags }) {
+  // 아직 수신한 샘플이 없을 때 (시나리오 변경 직후 등) — "이상"과 구분해서 표시
+  if (!sample) return <p className="muted gauge-empty">수신 대기 중…</p>;
+
   const l = sample?.leftG ?? null;
   const r = sample?.rightG ?? null;
   const imbalance = flags.includes(FLAGS.IMBALANCE) && ok(l) && ok(r);

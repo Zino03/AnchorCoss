@@ -13,7 +13,7 @@
   /* 텍스트 */
   --text: #1c2430;
   --text-sub: #5b6676;
-  --text-mute: #8a94a3;
+  --text-mute: #697386; /* 흰 배경 대비 4.78:1 */
 
   /* 포인트 (팀 색상 확정 시 교체) */
   --accent: #2563eb;
@@ -28,6 +28,12 @@
   --st-danger-bg: #fde8e8;
   --st-check: #6b7280;
   --st-check-bg: #eceef1;
+
+  /* 글자·아이콘용 진한 변형 — 연한 배경 위에서 대비 4.5:1 이상 (채움·선·마커는 위 색 사용) */
+  --st-normal-text: #166534;
+  --st-warn-text: #b45309;
+  --st-danger-text: #b91c1c;
+  --st-check-text: #4b5563;
 
   /* 차트 */
   --chart-left: #2563eb;
@@ -157,19 +163,19 @@ button {
   font-size: 0.9em;
 }
 .badge.st-normal {
-  color: var(--st-normal);
+  color: var(--st-normal-text);
   background: var(--st-normal-bg);
 }
 .badge.st-warn {
-  color: var(--st-warn);
+  color: var(--st-warn-text);
   background: var(--st-warn-bg);
 }
 .badge.st-danger {
-  color: var(--st-danger);
+  color: var(--st-danger-text);
   background: var(--st-danger-bg);
 }
 .badge.st-check {
-  color: var(--st-check);
+  color: var(--st-check-text);
   background: var(--st-check-bg);
 }
 .badge-pending {
@@ -199,10 +205,10 @@ button {
 }
 
 /* 상태 색 텍스트 (숫자 등) */
-.tx-normal { color: var(--st-normal); }
-.tx-warn { color: var(--st-warn); }
-.tx-danger { color: var(--st-danger); }
-.tx-check { color: var(--st-check); }
+.tx-normal { color: var(--st-normal-text); }
+.tx-warn { color: var(--st-warn-text); }
+.tx-danger { color: var(--st-danger-text); }
+.tx-check { color: var(--st-check-text); }
 
 /* ---------- 5. 버튼 ---------- */
 .btn {
@@ -420,7 +426,7 @@ button {
   background: linear-gradient(90deg, var(--st-danger-bg), var(--accent-soft));
 }
 .banner-icon {
-  color: var(--st-danger);
+  color: var(--st-danger-text);
   font-size: 20px;
 }
 .banner-text {
@@ -432,7 +438,7 @@ button {
   min-width: 0;
 }
 .banner-text strong {
-  color: var(--st-danger);
+  color: var(--st-danger-text);
 }
 .banner-reason {
   font-size: var(--fs-small);
@@ -456,7 +462,7 @@ button {
 .banner-more {
   padding: 4px var(--sp-5);
   background: var(--st-danger-bg);
-  color: var(--st-danger);
+  color: var(--st-danger-text);
   font-size: var(--fs-small);
   font-weight: 600;
 }
@@ -491,9 +497,9 @@ button {
 .toast-icon {
   font-weight: 700;
 }
-.toast.st-normal .toast-icon { color: var(--st-normal); }
-.toast.st-warn .toast-icon { color: var(--st-warn); }
-.toast.st-check .toast-icon { color: var(--st-check); }
+.toast.st-normal .toast-icon { color: var(--st-normal-text); }
+.toast.st-warn .toast-icon { color: var(--st-warn-text); }
+.toast.st-check .toast-icon { color: var(--st-check-text); }
 .toast-body {
   flex: 1;
   display: grid;
@@ -576,10 +582,10 @@ button {
   font-weight: 700;
   line-height: 1.1;
 }
-.summary-cell.st-normal { color: var(--st-normal); background: var(--st-normal-bg); }
-.summary-cell.st-warn { color: var(--st-warn); background: var(--st-warn-bg); }
-.summary-cell.st-danger { color: var(--st-danger); background: var(--st-danger-bg); }
-.summary-cell.st-check { color: var(--st-check); background: var(--st-check-bg); }
+.summary-cell.st-normal { color: var(--st-normal-text); background: var(--st-normal-bg); }
+.summary-cell.st-warn { color: var(--st-warn-text); background: var(--st-warn-bg); }
+.summary-cell.st-danger { color: var(--st-danger-text); background: var(--st-danger-bg); }
+.summary-cell.st-check { color: var(--st-check-text); background: var(--st-check-bg); }
 
 /* ---------- 9-2. 수거 우선순위 ---------- */
 .prio-row {
@@ -691,6 +697,27 @@ button {
 @keyframes ring {
   from { transform: scale(0.8); opacity: 0.9; }
   to { transform: scale(1.7); opacity: 0; }
+}
+
+.map-offline {
+  position: absolute;
+  top: var(--sp-3);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 500;
+  margin: 0;
+  padding: 6px var(--sp-3);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: var(--radius-sm);
+  box-shadow: var(--shadow);
+  font-size: 12px;
+  color: var(--st-warn-text);
+  white-space: nowrap;
+}
+.gauge-empty {
+  min-height: 150px;
+  display: grid;
+  place-items: center;
 }
 
 .map-legend {
@@ -851,7 +878,7 @@ button {
   inset: 0;
   display: grid;
   place-items: center;
-  color: var(--st-check);
+  color: var(--st-check-text);
   font-size: 12px;
   font-weight: 700;
 }
@@ -883,8 +910,8 @@ button {
   padding: 0 3px;
   border-radius: 3px;
 }
-.gauge-line.is-danger { border-color: var(--st-danger); color: var(--st-danger); }
-.gauge-line.is-warn { border-color: var(--st-warn); color: var(--st-warn); }
+.gauge-line.is-danger { border-color: var(--st-danger); color: var(--st-danger-text); }
+.gauge-line.is-warn { border-color: var(--st-warn); color: var(--st-warn-text); }
 
 .gauge-values {
   display: flex;
@@ -957,7 +984,7 @@ button {
   padding: var(--sp-2) var(--sp-3);
   border-radius: var(--radius-sm);
   background: var(--st-check-bg);
-  color: var(--st-check);
+  color: var(--st-check-text);
   font-weight: 600;
   font-size: var(--fs-small);
 }
