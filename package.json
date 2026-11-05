@@ -3,12 +3,18 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  },
   "scripts": {
     "dev": "vite",
+    "dev:host": "vite --host",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "scenario": "node scripts/print-scenario.js"
+    "scenario": "node scripts/print-scenario.js",
+    "fake-sensor": "node scripts/fake-sensor.js",
+    "db:reset": "node scripts/db-reset.js"
   },
   "dependencies": {
     "leaflet": "^1.9.4",

@@ -31,6 +31,11 @@ export function DrainDetail({ station, now, onCollect, onScenario }) {
         <FlagTags flags={j.flags} />
 
         {/* 이 지점만 조작 (전체 제어는 상단바) */}
+        {station.live && (
+          <span className="tag is-live" title="서버에 수신된 실물 센서 데이터로 판정 중">
+            실시간 수신
+          </span>
+        )}
         <div className="detail-actions">
           <label className="detail-scenario">
             <span className="muted">시나리오</span>
@@ -39,6 +44,8 @@ export function DrainDetail({ station, now, onCollect, onScenario }) {
               value={station.scenarioId}
               onChange={(e) => onScenario(station.id, e.target.value)}
               aria-label={`${station.name} 시나리오`}
+              disabled={station.live}
+              title={station.live ? "실물 센서 지점은 시나리오가 없습니다" : undefined}
             >
               {SCENARIOS.map((s) => (
                 <option key={s.id} value={s.id}>
@@ -47,7 +54,12 @@ export function DrainDetail({ station, now, onCollect, onScenario }) {
               ))}
             </select>
           </label>
-          <button className="btn" onClick={() => onCollect(station.id)} title="쌓인 쓰레기를 치운 것으로 처리">
+          <button
+            className="btn"
+            onClick={() => onCollect(station.id)}
+            disabled={station.live}
+            title={station.live ? "실물 지점은 실제로 거름망을 비우면 반영됩니다" : "쌓인 쓰레기를 치운 것으로 처리"}
+          >
             수거(리셋)
           </button>
         </div>

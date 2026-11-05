@@ -404,6 +404,20 @@ button {
   font-weight: 600;
   cursor: help;
 }
+.feed-badge.is-ok {
+  color: var(--st-normal-text);
+  background: var(--st-normal-bg);
+}
+.feed-badge.is-error {
+  color: var(--st-danger-text);
+  background: var(--st-danger-bg);
+  cursor: help;
+}
+.tag.is-live {
+  color: #fff;
+  background: var(--accent);
+}
+
 .weather-refresh {
   width: 32px;
   padding: 0;
