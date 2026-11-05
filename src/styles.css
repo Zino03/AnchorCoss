@@ -390,6 +390,25 @@ button {
   font-size: var(--fs-small);
   color: var(--text-sub);
 }
+.weather-info {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-size: var(--fs-small);
+  white-space: nowrap;
+}
+.weather-region {
+  font-weight: 600;
+}
+.weather-error {
+  font-weight: 600;
+  cursor: help;
+}
+.weather-refresh {
+  width: 32px;
+  padding: 0;
+}
+
 .control-sep {
   width: 1px;
   height: 20px;

@@ -11,7 +11,7 @@ const fmtClock = (ts) =>
   });
 
 /** 상단바: 제목 · 시뮬레이션 시각 · 시연 제어(전체 적용) */
-export function TopBar({ sim }) {
+export function TopBar({ sim, rainMode, onRainMode, weather }) {
   return (
     <header className="topbar">
       <div className="topbar-title">
@@ -22,7 +22,7 @@ export function TopBar({ sim }) {
           {!sim.playing && <span className="muted"> · 일시정지</span>}
         </span>
       </div>
-      <ScenarioControls sim={sim} />
+      <ScenarioControls sim={sim} rainMode={rainMode} onRainMode={onRainMode} weather={weather} />
     </header>
   );
 }
