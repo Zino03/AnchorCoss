@@ -29,7 +29,7 @@ export default function App() {
         </aside>
         <main className="layout-main">
           <MapView stations={sim.stations} selectedId={selectedId} onSelect={setSelectedId} />
-          <DrainDetail station={selected} />
+          <DrainDetail station={selected} now={sim.now} />
         </main>
       </div>
     </div>

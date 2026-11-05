@@ -1,5 +1,32 @@
 import { describe, it, expect } from "vitest";
-import { countByState, sortByPriority, fmtAgo, fmtG } from "./format.js";
+import { countByState, sortByPriority, fmtAgo, fmtG, rssiLevel, toChartData, rainSegments } from "./format.js";
+
+describe("rssiLevel", () => {
+  it("4단계", () => {
+    expect([-50, -65, -75, -85, -95, null].map(rssiLevel)).toEqual([4, 3, 2, 1, 0, 0]);
+  });
+});
+
+describe("toChartData / rainSegments", () => {
+  const smp = (ts, leftG, rightG, rainMm = 0) => ({ ts, leftG, rightG, rainMm });
+
+  it("합계 계산, 센서 이상값은 null", () => {
+    const d = toChartData([smp(0, 100, 50), smp(10_000, 100, -300), smp(20_000, null, 50)]);
+    expect(d.map((x) => x.total)).toEqual([150, null, null]);
+    expect(d[1]).toMatchObject({ left: 100, right: null });
+  });
+
+  it("수신이 끊긴 구간에 null 점을 넣는다", () => {
+    const d = toChartData([smp(0, 1, 1), smp(10_000, 1, 1), smp(600_000, 1, 1)]);
+    expect(d).toHaveLength(4);
+    expect(d[2].total).toBeNull();
+  });
+
+  it("강우 구간", () => {
+    const d = [0, 0, 5, 5, 0, 5].map((rain, i) => ({ ts: i, rain }));
+    expect(rainSegments(d, 1)).toEqual([{ from: 2, to: 3 }, { from: 5, to: 5 }]);
+  });
+});
 
 const st = (name, state, score, flags = []) => ({ id: name, name, judgement: { state, score, flags } });
 

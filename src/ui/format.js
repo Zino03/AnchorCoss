@@ -47,3 +47,57 @@ export function fmtTime(ts) {
 export function fmtG(v) {
   return v == null ? "—" : `${Math.round(v).toLocaleString("ko-KR")}g`;
 }
+
+/** 시각 HH:MM (그래프 축) */
+export function fmtHM(ts) {
+  return new Date(ts).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+/** 신호 세기 4단계 (dBm): -60 이상 4칸 … -90 미만 0칸 */
+export function rssiLevel(rssi) {
+  if (rssi == null) return 0;
+  if (rssi >= -60) return 4;
+  if (rssi >= -70) return 3;
+  if (rssi >= -80) return 2;
+  if (rssi >= -90) return 1;
+  return 0;
+}
+
+/** 센서 값이 유효한지 (음수·누락·범위 초과는 무효) */
+const valid = (v, maxG) => v != null && v >= 0 && v <= maxG;
+
+/**
+ * 샘플 이력 → 그래프 데이터.
+ * 수신이 끊긴 구간(gapMs 초과)에는 null 점을 넣어 선이 이어지지 않게 한다.
+ * 센서 이상값은 null로 바꿔 그래프에서 빠지게 한다.
+ */
+export function toChartData(history, { gapMs = 30_000, maxG = 5000 } = {}) {
+  const out = [];
+  for (let i = 0; i < history.length; i++) {
+    const s = history[i];
+    const prev = history[i - 1];
+    if (prev && s.ts - prev.ts > gapMs) {
+      out.push({ ts: prev.ts + 1, left: null, right: null, total: null, rain: prev.rainMm });
+    }
+    const l = valid(s.leftG, maxG) ? s.leftG : null;
+    const r = valid(s.rightG, maxG) ? s.rightG : null;
+    out.push({ ts: s.ts, left: l, right: r, total: l != null && r != null ? l + r : null, rain: s.rainMm });
+  }
+  return out;
+}
+
+/** 강우 구간 [{ from, to }] (rain ≥ minMm 이 이어지는 구간) */
+export function rainSegments(data, minMm) {
+  const segs = [];
+  let start = null;
+  for (let i = 0; i < data.length; i++) {
+    const on = data[i].rain >= minMm;
+    if (on && start == null) start = data[i].ts;
+    if (!on && start != null) {
+      segs.push({ from: start, to: data[i - 1].ts });
+      start = null;
+    }
+  }
+  if (start != null) segs.push({ from: start, to: data[data.length - 1].ts });
+  return segs;
+}
